@@ -8,14 +8,17 @@ import config.DBConnectionManager;
 
 public class AnimaleDAO {
 
-    public List<Animale> readAnimale(String usernameProprietario) throws SQLException, ClassNotFoundException {
+    public List<Animale> visualizzaAnimali(String nome) throws SQLException, ClassNotFoundException {
         List<Animale> animali = new ArrayList<>();
 
-        String query = "SELECT * FROM animale WHERE 1=1";
-        boolean hasUser = usernameProprietario != null;
+        String query = "SELECT a.chip, a.nome, a.razza, a.colore, a.dataNascita, a.usernameUtente,u.nome , u.cognome " +
+                "FROM animale a " +
+                "LEFT JOIN utente u ON u.username = a.usernameUtente " +
+                "WHERE 1=1";
+        boolean hasUser = nome != null && !nome.trim().isEmpty();
 
         if (hasUser) {
-            query += " AND usernameUtente = ?";
+            query += " AND LOWER(CONCAT(TRIM(u.nome), TRIM(u.cognome))) LIKE LOWER(TRIM((?)))";
         }
 
         Connection conn = null;
@@ -27,7 +30,7 @@ public class AnimaleDAO {
             stmt = conn.prepareStatement(query);
 
             if (hasUser) {
-                stmt.setString(1, usernameProprietario);
+                stmt.setString(1, "%"+ nome + "%");
             }
 
             rs = stmt.executeQuery();
@@ -51,5 +54,28 @@ public class AnimaleDAO {
         }
 
         return animali;
+    }
+
+    public Animale inserisciAnimale(Animale animale) throws SQLException, ClassNotFoundException {
+        String query = "INSERT INTO animale (chip, nome, razza, colore, dataNascita, usernameUtente) " +
+                       "VALUES (?, ?, ?, ?, ?, ?)";
+
+        try (Connection conn = DBConnectionManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setInt(1, animale.getChip());
+            stmt.setString(2, animale.getNome());
+            stmt.setString(3, animale.getRazza());
+            stmt.setString(4, animale.getColore());
+            stmt.setString(5, animale.getDataNascita());
+            stmt.setString(6, animale.getUsernameUtente());
+
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected > 0) {
+                return animale; // Ritorna l'animale inserito
+            } else {
+                throw new SQLException("Inserimento fallito per l'animale: " + animale.getNome());
+            }
+        }
     }
 }
