@@ -114,5 +114,26 @@ public class UtenteDAO {
                 }
             }
         }
+
+        public void aggiornaUtente(Utente utente) throws SQLException, ClassNotFoundException {
+            String query = "UPDATE utente SET nome = ?, cognome = ?, email = ?, password = ?, immagineProfilo = ? WHERE username = ?";
+
+            try (
+                Connection conn = DBConnectionManager.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(query)
+            ) {
+                stmt.setString(1, utente.getNome());
+                stmt.setString(2, utente.getCognome());
+                stmt.setString(3, utente.getEmail());
+                stmt.setString(4, utente.getPassword());
+                stmt.setString(5, utente.getImmagineProfilo());
+                stmt.setString(6, utente.getUsername());
+
+                int rowsAffected = stmt.executeUpdate();
+                if (rowsAffected == 0) {
+                    throw new SQLException("Nessun utente aggiornato.");
+                }
+            }
+        }
     }
 
