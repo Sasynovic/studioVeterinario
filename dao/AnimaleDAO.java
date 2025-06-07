@@ -15,10 +15,12 @@ public class AnimaleDAO {
                 "FROM animale a " +
                 "LEFT JOIN utente u ON u.username = a.usernameUtente " +
                 "WHERE 1=1";
+
         boolean hasUser = nome != null && !nome.trim().isEmpty();
 
         if (hasUser) {
-            query += " AND LOWER(CONCAT(TRIM(u.nome), TRIM(u.cognome))) LIKE LOWER(TRIM((?)))";
+//            query += " AND LOWER(CONCAT(TRIM(u.nome), TRIM(u.cognome))) LIKE ?";
+              query += " AND LOWER(a.usernameUtente) = ?"; // Modifica per cercare per username
         }
 
         Connection conn = null;
@@ -30,7 +32,7 @@ public class AnimaleDAO {
             stmt = conn.prepareStatement(query);
 
             if (hasUser) {
-                stmt.setString(1, "%"+ nome + "%");
+                stmt.setString(1, nome);
             }
 
             rs = stmt.executeQuery();
@@ -78,4 +80,21 @@ public class AnimaleDAO {
             }
         }
     }
+
+    public void cancellaAnimale(int chip) throws SQLException, ClassNotFoundException {
+        String query = "DELETE FROM animale WHERE chip = ?";
+
+        try (Connection conn = DBConnectionManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setInt(1, chip);
+            int rowsAffected = stmt.executeUpdate();
+
+            if (rowsAffected == 0) {
+                throw new SQLException("Nessun animale trovato con il chip: " + chip);
+            }
+        }
+    }
+
+
 }

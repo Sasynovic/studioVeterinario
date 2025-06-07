@@ -36,4 +36,14 @@ public class Animale {
 
     public String getUsernameUtente() {return usernameUtente;}
     public void setUsernameUtente(String usernameUtente) {this.usernameUtente = usernameUtente;}
+
+    @Override
+    public String toString() {
+        return "Nome : " + nome +
+               ", Razza: " + razza +
+               ", Colore: " + colore +
+               ", Data di Nascita: " + dataNascita +
+               ", Chip: " + chip +
+               ", Proprietario: " + usernameUtente;
+    }
 }
