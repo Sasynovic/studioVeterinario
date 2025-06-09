@@ -10,64 +10,37 @@ import models.Proprietario;
 import config.DBConnectionManager;
 
 public class UtenteDAO {
-        public Utente login (String username, String password) throws SQLException, ClassNotFoundException {
-            String query = "SELECT username, nome, cognome, email, password, immagineProfilo, tipoUtente " +
-                    "FROM utente WHERE username = ?";
 
-            try (
-                    Connection conn = DBConnectionManager.getConnection();
-                    PreparedStatement stmt = conn.prepareStatement(query)
-            ) {
-                stmt.setString(1, username);
+    public Boolean login(String username, String password) throws SQLException, ClassNotFoundException {
+        String query = "SELECT password FROM utente WHERE username = ?";
 
-                try (ResultSet rs = stmt.executeQuery()) {
-                    if (rs.next()) {
-                        // Confronta la password (meglio se hashata in futuro)
-                        String pwdFromDb = rs.getString("password");
+        try (Connection conn = DBConnectionManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
 
-                        if (pwdFromDb.equals(password)) {
-                            int tipo = rs.getInt("tipoutente");
+            stmt.setString(1, username);
 
-                            switch(tipo){
-                                case 1: // Amministratore
-                                    return new Amministratore(
-                                        rs.getString("username"),
-                                        rs.getString("nome"),
-                                        rs.getString("cognome"),
-                                        rs.getString("email"),
-                                        pwdFromDb,
-                                        rs.getString("immagineProfilo")
-                                    );
-                                case 2: // Veterinario
-                                    return new Veterinario(
-                                        rs.getString("username"),
-                                        rs.getString("nome"),
-                                        rs.getString("cognome"),
-                                        rs.getString("email"),
-                                        pwdFromDb,
-                                        rs.getString("immagineProfilo")
-                                    );
-                                case 3: // Proprietario
-                                    return new Proprietario(
-                                        rs.getString("username"),
-                                        rs.getString("nome"),
-                                        rs.getString("cognome"),
-                                        rs.getString("email"),
-                                        pwdFromDb,
-                                        rs.getString("immagineProfilo")
-                                    );
-                                default:
-                                    throw new SQLException("Tipo utente sconosciuto: " + tipo);
-                            }
-                        }
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    String dbPassword = rs.getString("password");
+                    if (dbPassword.equals(password)) {
+                        return true;
+                    } else {
+                        throw new SQLException("Credenziali errate.");
                     }
+                } else {
+                    throw new SQLException("Utente non trovato.");
                 }
             }
-
-            return null; // Credenziali errate
+        } catch (SQLException e) {
+            System.err.println("Errore durante il login: " + e.getMessage());
+            throw e;
+        } catch (ClassNotFoundException e) {
+            System.err.println("Driver JDBC non trovato: " + e.getMessage());
+            throw e;
         }
+    }
 
-        public Utente registrazione (String username, String nome, String cognome, String email, String password, String immagineProfilo) throws SQLException, ClassNotFoundException {
+    public Utente registrazione(String username, String nome, String cognome, String email, String password, String immagineProfilo) throws SQLException, ClassNotFoundException {
             String query = "INSERT INTO utente (username, nome, cognome, email, password, immagineProfilo, tipoUtente) VALUES (?, ?, ?, ?, ?, ?, 3)";
 
             // Controlla se l'username esiste già
@@ -115,7 +88,7 @@ public class UtenteDAO {
             }
         }
 
-        public void aggiornaUtente(Utente utente) throws SQLException, ClassNotFoundException {
+    public void aggiornaUtente(Utente utente) throws SQLException, ClassNotFoundException {
             String query = "UPDATE utente SET nome = ?, cognome = ?, email = ?, password = ?, immagineProfilo = ? WHERE username = ?";
 
             try (
