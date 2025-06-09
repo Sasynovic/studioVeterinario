@@ -1,4 +1,4 @@
-import jFrame.Homepage;
+import boundary.Homepage;
 
 import javax.swing.*;
 
