@@ -1,7 +1,6 @@
-package models;
+package entity;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 
 public class Agenda {
     // Dati della Prenotazione

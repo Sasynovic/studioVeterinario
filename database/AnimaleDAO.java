@@ -1,10 +1,9 @@
-package dao;
+package database;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import models.Animale;
-import config.DBConnectionManager;
+import entity.Animale;
 
 public class AnimaleDAO {
 

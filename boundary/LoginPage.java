@@ -1,4 +1,4 @@
-package jFrame;
+package boundary;
 
 import javax.swing.*;
 import java.awt.*;
@@ -6,7 +6,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
 
-import dao.UtenteDAO;
+import control.LoginResult;
+import database.UtenteDAO;
 
 public class LoginPage {
     private JPanel loginPanel;
@@ -76,7 +77,7 @@ public class LoginPage {
                 String password = new String(passwordPasswordField.getPassword()).trim();
 
                 // Validazione input
-                if(username.isEmpty() || password.isEmpty()) {
+                if (username.isEmpty() || password.isEmpty()) {
                     JOptionPane.showMessageDialog(frame,
                             "Inserisci username e password",
                             "Campi mancanti",
@@ -86,20 +87,27 @@ public class LoginPage {
 
                 UtenteDAO utenteDao = new UtenteDAO();
                 try {
-                    if(utenteDao.login(username, password)) {
-                        // Login riuscito
+                    LoginResult user = utenteDao.login(username, password);
+
+                    if (user.isSuccess()) {
                         JOptionPane.showMessageDialog(frame,
                                 "Login effettuato con successo!",
                                 "Benvenuto",
-
                                 JOptionPane.INFORMATION_MESSAGE);
 
-                        frame.setContentPane(new Homepage().getHomepagePanel());
+                        int tipo = user.getTipoUtente();
+
+                        if (tipo == 1) {
+                            frame.setContentPane(new AdminCMS(frame).getAdminPanel());
+//                        } else {
+//                            // Qui dovresti impostare la homepage per gli utenti normali
+////                            frame.setContentPane(new UserHomepage(frame).getPanel());
+                        }
                         frame.revalidate();
                         frame.repaint();
                     } else {
                         JOptionPane.showMessageDialog(frame,
-                                "Username o password errati",
+                                user.getMessage(),
                                 "Errore di login",
                                 JOptionPane.ERROR_MESSAGE);
 

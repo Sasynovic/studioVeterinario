@@ -1,18 +1,15 @@
-package dao;
+package database;
 
 import java.sql.*;
 
-import models.Utente;
-import models.Amministratore;
-import models.Veterinario;
-import models.Proprietario;
-
-import config.DBConnectionManager;
+import entity.Utente;
+import control.LoginResult;
+import entity.Proprietario;
 
 public class UtenteDAO {
 
-    public Boolean login(String username, String password) throws SQLException, ClassNotFoundException {
-        String query = "SELECT password FROM utente WHERE username = ?";
+    public LoginResult login(String username, String password) throws SQLException, ClassNotFoundException {
+        String query = "SELECT password, tipoUtente FROM utente WHERE username = ?";
 
         try (Connection conn = DBConnectionManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -22,13 +19,14 @@ public class UtenteDAO {
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     String dbPassword = rs.getString("password");
+                    int tipoUtente = rs.getInt("tipoUtente");
                     if (dbPassword.equals(password)) {
-                        return true;
+                        return new LoginResult(true, tipoUtente, "Login effettuato con successo.");
                     } else {
-                        throw new SQLException("Credenziali errate.");
+                        return new LoginResult(false, 0, "Password errata.");
                     }
                 } else {
-                    throw new SQLException("Utente non trovato.");
+                    return new LoginResult(false, 0, "Username non trovato.");
                 }
             }
         } catch (SQLException e) {

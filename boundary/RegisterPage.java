@@ -1,4 +1,4 @@
-package jFrame;
+package boundary;
 
 import javax.swing.*;
 import java.awt.*;
@@ -8,7 +8,7 @@ import java.awt.event.FocusEvent;
 import java.io.File;
 import java.util.regex.Pattern;
 
-import dao.UtenteDAO;
+import database.UtenteDAO;
 
 public class RegisterPage {
     private JPanel registerPanel;

@@ -1,11 +1,10 @@
 // ===== DAO AGGIORNATA =====
-package dao;
+package database;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import models.*;
-import config.DBConnectionManager;
+import entity.*;
 
 public class AgendaDAO {
 
