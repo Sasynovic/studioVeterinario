@@ -42,7 +42,7 @@ public class AnimaleDAO {
                         rs.getString("nome"),
                         rs.getString("razza"),
                         rs.getString("colore"),
-                        rs.getString("dataNascita"),
+                        rs.getDate("dataNascita"),
                         rs.getString("usernameUtente")
                 );
                 animali.add(a);
@@ -68,7 +68,7 @@ public class AnimaleDAO {
             stmt.setString(2, animale.getNome());
             stmt.setString(3, animale.getRazza());
             stmt.setString(4, animale.getColore());
-            stmt.setString(5, animale.getDataNascita());
+            stmt.setDate(5, new java.sql.Date(animale.getDataNascita().getTime()));
             stmt.setString(6, animale.getUsernameUtente());
 
             int rowsAffected = stmt.executeUpdate();

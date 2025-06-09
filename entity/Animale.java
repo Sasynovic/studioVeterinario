@@ -1,16 +1,18 @@
 package entity;
 
+import java.util.Date;
+
 public class Animale {
     private int chip;
     private String nome;
     private String razza;
     private String colore;
-    private String dataNascita;
+    private Date dataNascita;
     private String usernameUtente; // reference to the owner (Utente)
 
     public Animale(){}
 
-    public Animale(int chip, String nome, String razza, String colore, String dataNascita, String usernameUtente) {
+    public Animale(int chip, String nome, String razza, String colore, Date dataNascita, String usernameUtente) {
         this.chip = chip;
         this.nome = nome;
         this.razza = razza;
@@ -31,8 +33,8 @@ public class Animale {
     public String getColore(){return colore; }
     public void setColore(String colore){this.colore = colore; }
 
-    public String getDataNascita(){return dataNascita; }
-    public void setDataNascita(String dataNascita){this.dataNascita = dataNascita; }
+    public Date getDataNascita(){return dataNascita; }
+    public void setDataNascita(Date dataNascita){this.dataNascita = dataNascita; }
 
     public String getUsernameUtente() {return usernameUtente;}
     public void setUsernameUtente(String usernameUtente) {this.usernameUtente = usernameUtente;}
