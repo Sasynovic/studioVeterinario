@@ -97,24 +97,43 @@ public class LoginPage {
 
                         int tipo = user.getTipoUtente();
 
-                        if (tipo == 1) {
-                            frame.setContentPane(new AdminCMS(frame).getAdminPanel());
-//                        } else {
-//                            // Qui dovresti impostare la homepage per gli utenti normali
-////                            frame.setContentPane(new UserHomepage(frame).getPanel());
+                        switch (tipo) {
+                            case 1: // Amministratore
+                                frame.setContentPane(new AdminCMS(frame).getAdminPanel());
+                                frame.revalidate();
+                                frame.repaint();
+                                break;
+                            case 2: // Veterinario
+//                                frame.setContentPane(new VetCMS(frame).getVetPanel());
+//                                frame.revalidate();
+//                                frame.repaint();
+//                                break;
+                            case 3: // Proprietario
+                                frame.setContentPane(new ProCMS(frame, user.getNome(), user.getCognome(), user.getUsername() ).getProPanel());
+                                frame.revalidate();
+                                frame.repaint();
+                                break;
+                            default: // Utente non riconosciuto
+                                JOptionPane.showMessageDialog(frame,
+                                        user.getMessage(),
+                                        "Errore di login",
+                                        JOptionPane.ERROR_MESSAGE);
+                                // Pulisci il campo password
+                                passwordPasswordField.setText("");
+                                usernameTextField.requestFocus();
+                                break;
                         }
-                        frame.revalidate();
-                        frame.repaint();
+
                     } else {
                         JOptionPane.showMessageDialog(frame,
                                 user.getMessage(),
                                 "Errore di login",
                                 JOptionPane.ERROR_MESSAGE);
-
                         // Pulisci il campo password
                         passwordPasswordField.setText("");
                         usernameTextField.requestFocus();
                     }
+
                 } catch (SQLException ex) {
                     JOptionPane.showMessageDialog(frame,
                             "Errore durante il login: " + ex.getMessage(),
