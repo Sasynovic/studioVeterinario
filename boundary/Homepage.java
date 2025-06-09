@@ -1,4 +1,4 @@
-package jFrame;
+package boundary;
 
 import javax.swing.*;
 import java.awt.*;
