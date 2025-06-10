@@ -10,7 +10,8 @@ public class Animale {
     private Date dataNascita;
     private String usernameUtente; // reference to the owner (Utente)
 
-    public Animale(){}
+    public Animale() {
+    }
 
     public Animale(int chip, String nome, String razza, String colore, Date dataNascita, String usernameUtente) {
         this.chip = chip;
@@ -21,31 +22,63 @@ public class Animale {
         this.usernameUtente = usernameUtente;
     }
 
-    public int getChip(){return chip; }
-    public void setChip(int chip){this.chip = chip; }
+    public int getChip() {
+        return chip;
+    }
 
-    public String getNome(){return nome; }
-    public void setNome(String nome){this.nome = nome; }
+    public void setChip(int chip) {
+        this.chip = chip;
+    }
 
-    public String getRazza(){return razza; }
-    public void setRazza(String razza){this.razza = razza; }
+    public String getNome() {
+        return nome;
+    }
 
-    public String getColore(){return colore; }
-    public void setColore(String colore){this.colore = colore; }
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
 
-    public Date getDataNascita(){return dataNascita; }
-    public void setDataNascita(Date dataNascita){this.dataNascita = dataNascita; }
+    public String getRazza() {
+        return razza;
+    }
 
-    public String getUsernameUtente() {return usernameUtente;}
-    public void setUsernameUtente(String usernameUtente) {this.usernameUtente = usernameUtente;}
+    public void setRazza(String razza) {
+        this.razza = razza;
+    }
+
+    public String getColore() {
+        return colore;
+    }
+
+    public void setColore(String colore) {
+        this.colore = colore;
+    }
+
+    public Date getDataNascita() {
+        return dataNascita;
+    }
+
+    public void setDataNascita(Date dataNascita) {
+        this.dataNascita = dataNascita;
+    }
+
+    public String getUsernameUtente() {
+        return usernameUtente;
+    }
+
+    public void setUsernameUtente(String usernameUtente) {
+        this.usernameUtente = usernameUtente;
+    }
 
     @Override
     public String toString() {
-        return "Nome : " + nome +
-               ", Razza: " + razza +
-               ", Colore: " + colore +
-               ", Data di Nascita: " + dataNascita +
-               ", Chip: " + chip +
-               ", Proprietario: " + usernameUtente;
+        return "=== DETTAGLI ANIMALE ===\n\n" +
+                "Chip: " + chip +
+                "\nNome : " + nome +
+                "\nRazza: " + razza +
+                "\nColore: " + colore +
+                "\nData di Nascita: " + dataNascita +
+                "\nProprietario: " + usernameUtente;
     }
+
 }
