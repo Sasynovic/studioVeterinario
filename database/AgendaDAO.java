@@ -8,7 +8,7 @@ import entity.*;
 
 public class AgendaDAO {
 
-    public List<Agenda> VisualizzaAgendaUser(String username) throws SQLException, ClassNotFoundException {
+    public List<Agenda> VisualizzaAgenda(String username) throws SQLException, ClassNotFoundException {
         List<Agenda> agendaItems = new ArrayList<>();
 
         String query = "SELECT p.tipoVisita, p.descrizione, p.costo, p.chipAnimale, " +
@@ -22,10 +22,15 @@ public class AgendaDAO {
                 "LEFT JOIN Utente u ON p.usernameVeterinario = u.username " +
                 "LEFT JOIN Animale a ON p.chipAnimale = a.chip " +
                 "LEFT JOIN Utente u2 ON a.usernameUtente = u2.username " +
-                "LEFT JOIN Slot s ON p.idSlot = s.idslot " +
+                "LEFT JOIN Slot s ON p.idSlot = s.idslot ";
 
-                "WHERE a.usernameUtente = ? " +
-                "ORDER BY s.data, s.orario";
+                if(username.trim().isEmpty() || username == null) {
+                    query += "ORDER BY s.data, s.orario";
+                }else{
+                     query += "WHERE a.usernameUtente = ?" +
+                                "ORDER BY s.data, s.orario";
+                }
+
 
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -34,7 +39,10 @@ public class AgendaDAO {
         try {
             conn = DBConnectionManager.getConnection();
             stmt = conn.prepareStatement(query);
-            stmt.setString(1, username);
+            if(!username.trim().isEmpty()) {
+                // Non impostare il parametro se username è vuoto o nullo
+                stmt.setString(1, username);
+            }
             rs = stmt.executeQuery();
 
             while (rs.next()) {
@@ -67,26 +75,5 @@ public class AgendaDAO {
         return agendaItems;
     }
 
-    public void stampaAgendaUser(String username) throws SQLException, ClassNotFoundException {
-        List<Agenda> agenda = VisualizzaAgendaUser(username);
 
-        System.out.println("=== AGENDA UTENTE: " + username + " ===");
-        if (agenda.isEmpty()) {
-            System.out.println("Nessuna prenotazione trovata.");
-            return;
-        }
-
-        for (Agenda item : agenda) {
-            System.out.println("──────────────────────────────────────────");
-            System.out.println("Tipo Visita: " + item.getTipoVisita());
-            System.out.println("Animale: " + item.getNomeAnimale() + " (Chip: " + item.getChipAnimale() + ")");
-            System.out.println("Veterinario: Dr. " + item.getNomeVeterinario() + " " + item.getCognomeVeterinario());
-            System.out.println("Data e Ora: " + item.getData() + " alle " + item.getOrario());
-            System.out.println("Costo: €" + String.format("%.2f", item.getCosto()));
-            System.out.println("Descrizione: " + item.getDescrizione());
-            System.out.println("Proprietario: " + item.getNomeProprietario() + " " + item.getCognomeProprietario());
-        }
-        System.out.println("──────────────────────────────────────────");
-        System.out.println("Totale prenotazioni: " + agenda.size());
-    }
 }
