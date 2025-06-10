@@ -2,14 +2,12 @@ package boundary;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class AdminCMS {
     private JPanel adminPanel;
     private JButton elencoVisiteGiornaliereButton;
     private JButton visualizzaAnimaliUltimaVaccinazioneButton;
-    private JButton inserisciDisponibilitaButton;
+    private JButton inserisciSlotButton;
     private JButton logoutButton;
     private JLabel titleLabel;
 
@@ -37,8 +35,8 @@ public class AdminCMS {
         styleButton(visualizzaAnimaliUltimaVaccinazioneButton, new Color(60, 179, 113));
 
         // Pulsante Inserisci Disponibilità
-        inserisciDisponibilitaButton = new JButton("Inserisci Disponibilità");
-        styleButton(inserisciDisponibilitaButton, new Color(186, 85, 211));
+        inserisciSlotButton = new JButton("Inserisci Disponibilità");
+        styleButton(inserisciSlotButton, new Color(186, 85, 211));
 
 
         // Pulsante Logout
@@ -52,7 +50,7 @@ public class AdminCMS {
         adminPanel.add(Box.createVerticalStrut(10));
         adminPanel.add(visualizzaAnimaliUltimaVaccinazioneButton);
         adminPanel.add(Box.createVerticalStrut(10));
-        adminPanel.add(inserisciDisponibilitaButton);
+        adminPanel.add(inserisciSlotButton);
         adminPanel.add(Box.createVerticalStrut(10));
         adminPanel.add(logoutButton);
 
@@ -67,7 +65,7 @@ public class AdminCMS {
 //            new AnimaliVaccinazioneDialog(frame).setVisible(true);
         });
 
-        inserisciDisponibilitaButton.addActionListener(e -> {
+        inserisciSlotButton.addActionListener(e -> {
             // Apri la finestra per inserire disponibilità
 //            new DisponibilitaDialog(frame).setVisible(true);
         });
@@ -102,7 +100,8 @@ public class AdminCMS {
             super(parent, "Elenco Visite Giornaliere", true);
             setSize(600, 400);
             setLocationRelativeTo(parent);
-            // Implementazione della finestra...
+
+
         }
     }
 
