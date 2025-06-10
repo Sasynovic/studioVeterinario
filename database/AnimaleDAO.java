@@ -95,5 +95,24 @@ public class AnimaleDAO {
         }
     }
 
+    public void aggiornaAnimale(Animale animale) throws SQLException, ClassNotFoundException {
+        String query = "UPDATE animale SET nome = ?, razza = ?, colore = ?, dataNascita = ? WHERE chip = ?";
+
+        try (Connection conn = DBConnectionManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, animale.getNome());
+            stmt.setString(2, animale.getRazza());
+            stmt.setString(3, animale.getColore());
+            stmt.setDate(4, new java.sql.Date(animale.getDataNascita().getTime()));
+            stmt.setInt(5, animale.getChip());
+
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected == 0) {
+                throw new SQLException("Aggiornamento fallito per l'animale con chip: " + animale.getChip());
+            }
+        }
+    }
+
 
 }
