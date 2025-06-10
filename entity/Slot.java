@@ -10,11 +10,11 @@ public class Slot {
     private boolean disponibile;
 
     public Slot() {}
-    public Slot(int id, Date data, int orario) {
+    public Slot(int id, Date data, int orario, boolean disponibile) {
         this.id = id;
         this.data = data;
         this.orario = orario;
-        this.disponibile = false;
+        this.disponibile = disponibile;
     }
 
     public int getId() {return id;}
