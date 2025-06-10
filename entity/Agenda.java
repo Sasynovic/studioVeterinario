@@ -19,6 +19,7 @@ public class Agenda {
     // Dati del Proprietario
     private String nomeProprietario;
     private String cognomeProprietario;
+    private String nomeStato;
 
     // Dati dello Slot
     private String idSlot;
@@ -28,9 +29,9 @@ public class Agenda {
 
     // Costruttore completo
     public Agenda(String tipoVisita, String descrizione, double costo, String chipAnimale,
-                         String nomeVeterinario, String cognomeVeterinario, String nomeAnimale,
-                         String nomeProprietario, String cognomeProprietario,
-                         String idSlot, LocalDate data, int orario, boolean disponibile) {
+                  String nomeVeterinario, String cognomeVeterinario, String nomeAnimale,
+                  String nomeProprietario, String cognomeProprietario,
+                  String idSlot, LocalDate data, int orario, boolean disponibile, String nomeStato) {
         this.tipoVisita = tipoVisita;
         this.descrizione = descrizione;
         this.costo = costo;
@@ -44,6 +45,7 @@ public class Agenda {
         this.data = data;
         this.orario = orario;
         this.disponibile = disponibile;
+        this.nomeStato = nomeStato;
     }
 
     // Getter e Setter
@@ -85,6 +87,9 @@ public class Agenda {
 
     public boolean isDisponibile() { return disponibile; }
     public void setDisponibile(boolean disponibile) { this.disponibile = disponibile; }
+
+    public String getNomeStato() { return nomeStato; }
+    public void setNomeStato(String nomeStato) { this.nomeStato = nomeStato; }
 
     @Override
     public String toString() {
