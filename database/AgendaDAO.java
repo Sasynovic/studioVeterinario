@@ -1,4 +1,3 @@
-// ===== DAO AGGIORNATA =====
 package database;
 
 import java.sql.*;
@@ -15,14 +14,17 @@ public class AgendaDAO {
                 "u.nome AS nomeVeterinario, u.cognome AS cognomeVeterinario, " +
                 "a.nome AS nomeAnimale, " +
                 "u2.nome AS nomeProprietario, u2.cognome AS cognomeProprietario, " +
-                "s.idslot, s.data, s.orario, s.disponibile " +
+                "s.idslot, s.data, s.orario, s.disponibile, " +
+                "st.nomeStato "+
 
                 "FROM Prenotazione p " +
 
                 "LEFT JOIN Utente u ON p.usernameVeterinario = u.username " +
                 "LEFT JOIN Animale a ON p.chipAnimale = a.chip " +
                 "LEFT JOIN Utente u2 ON a.usernameUtente = u2.username " +
-                "LEFT JOIN Slot s ON p.idSlot = s.idslot ";
+                "LEFT JOIN Slot s ON p.idSlot = s.idslot " +
+                "LEFT JOIN Stato st ON st.idStato = p.idStato ";
+
 
                 if(username.trim().isEmpty() || username == null) {
                     query += "ORDER BY s.data, s.orario";
@@ -60,7 +62,8 @@ public class AgendaDAO {
                         rs.getString("idslot"),
                         rs.getDate("data").toLocalDate(),
                         rs.getInt("orario"),
-                        rs.getBoolean("disponibile")
+                        rs.getBoolean("disponibile"),
+                        rs.getString("nomeStato")
                 );
 
                 agendaItems.add(agendaItem);
@@ -74,6 +77,5 @@ public class AgendaDAO {
 
         return agendaItems;
     }
-
 
 }
