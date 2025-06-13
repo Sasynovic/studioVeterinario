@@ -1,10 +1,13 @@
 package entity;
 
 import java.util.Date;
+import java.util.List;
+import database.AnimaleDAO;
 
 public class Animale {
     private int chip;
     private String nome;
+    private String tipo;
     private String razza;
     private String colore;
     private Date dataNascita;
@@ -13,7 +16,7 @@ public class Animale {
     public Animale() {
     }
 
-    public Animale(int chip, String nome, String razza, String colore, Date dataNascita, String usernameUtente) {
+    public Animale(int chip, String nome, String tipo,String razza, String colore, Date dataNascita, String usernameUtente) {
         this.chip = chip;
         this.nome = nome;
         this.razza = razza;
@@ -25,60 +28,46 @@ public class Animale {
     public int getChip() {
         return chip;
     }
-
-    public void setChip(int chip) {
-        this.chip = chip;
-    }
-
     public String getNome() {
         return nome;
     }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
+    public String getTipo() {return tipo;}
     public String getRazza() {
         return razza;
     }
-
-    public void setRazza(String razza) {
-        this.razza = razza;
-    }
-
     public String getColore() {
         return colore;
     }
-
-    public void setColore(String colore) {
-        this.colore = colore;
-    }
-
     public Date getDataNascita() {
         return dataNascita;
     }
-
-    public void setDataNascita(Date dataNascita) {
-        this.dataNascita = dataNascita;
-    }
-
     public String getUsernameUtente() {
         return usernameUtente;
     }
 
-    public void setUsernameUtente(String usernameUtente) {
-        this.usernameUtente = usernameUtente;
-    }
-
     @Override
     public String toString() {
-        return "=== DETTAGLI ANIMALE ===\n\n" +
-                "Chip: " + chip +
-                "\nNome : " + nome +
-                "\nRazza: " + razza +
-                "\nColore: " + colore +
-                "\nData di Nascita: " + dataNascita +
-                "\nProprietario: " + usernameUtente;
+        return "Nome : " + nome + " - Chip : " + chip;
+    }
+
+    public List<Animale> getAllAnimals(String usernameUtente) {
+        AnimaleDAO animaleDAO = new AnimaleDAO();
+        try {
+            return animaleDAO.read(usernameUtente);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null; // Handle exception appropriately
+        }
+    }
+
+    public void save(Animale animale) {
+        AnimaleDAO animaleDAO = new AnimaleDAO();
+        try {
+            animaleDAO.create(animale);
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Handle exception appropriately
+        }
     }
 
 }
