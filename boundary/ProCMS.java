@@ -53,7 +53,7 @@ public class ProCMS {
     }
     //visualizzazione
     private void createAnimalsSection() {
-        JPanel animaliPanel = createSectionPanel("Operazioni Principali");
+        JPanel animaliPanel = utilities.createSectionPanel("Operazioni Principali");
         aggiungiAnimaleButton = utilities.createButton("Aggiungi Animale", utilities.Blue);
         effettuaPrenotazioneButton = utilities.createButton("Effettua Prenotazione",utilities.Green);
 
@@ -67,7 +67,7 @@ public class ProCMS {
     }
     //visualizzazione
     private void createActionsSection() {
-        JPanel azioniPanel = createSectionPanel("Altre Azioni");
+        JPanel azioniPanel = utilities.createSectionPanel("Altre Azioni");
         modificaProfiloButton = utilities.createButton("Modifica Profilo", utilities.Orange);
         logoutButton = utilities.createButton("Logout", utilities.DarkGray);
 
@@ -103,22 +103,6 @@ public class ProCMS {
         });
 
 
-    }
-
-    //funzione per creare divisione nella gui tra le sezioni principali
-    private JPanel createSectionPanel(String title) {
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBackground(new Color(245, 250, 255));
-        panel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        panel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(new Color(200, 200, 200)),
-                title,
-                javax.swing.border.TitledBorder.LEFT,
-                javax.swing.border.TitledBorder.TOP,
-                new Font("Segoe UI", Font.BOLD, 14),
-                new Color(100, 100, 100)));
-        return panel;
     }
 
     // Dialog per inserire un animale
