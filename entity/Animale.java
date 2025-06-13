@@ -1,5 +1,6 @@
 package entity;
 
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 import database.AnimaleDAO;
@@ -61,13 +62,16 @@ public class Animale {
         }
     }
 
-    public void save(Animale animale) {
+    public void save(Animale animale) throws SQLException, ClassNotFoundException{
         AnimaleDAO animaleDAO = new AnimaleDAO();
         try {
             animaleDAO.create(animale);
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
-            // Handle exception appropriately
+            throw e; // Rilancia l'eccezione per gestirla a livello superiore
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            throw e; // Rilancia l'eccezione per gestirla a livello superiore
         }
     }
 

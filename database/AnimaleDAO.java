@@ -21,10 +21,11 @@ public class AnimaleDAO {
             stmt.setString(5, animale.getColore());
             stmt.setDate(6, new java.sql.Date(animale.getDataNascita().getTime()));
             stmt.setString(7, animale.getUsernameUtente());
-
             stmt.executeUpdate();
-        } catch (SQLException e ) {
-            throw new SQLException("Inserimento fallito : " + e.getMessage());
+        }catch (SQLException e) {
+            throw new SQLException("Inserimento fallito: " + e.getMessage());
+        } catch (ClassNotFoundException e) {
+            throw new ClassNotFoundException("Driver JDBC non trovato: " + e.getMessage());
         }
     }
 
