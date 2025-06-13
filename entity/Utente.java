@@ -1,6 +1,12 @@
 package entity;
 
-public abstract class Utente {
+import controller.LoginResult;
+import database.UtenteDAO;
+
+import java.sql.SQLException;
+
+
+public class Utente {
 
     protected String username;
     protected String nome;
@@ -41,6 +47,21 @@ public abstract class Utente {
 
     public int getTipoUtente() {return tipoUtente;}
     public void setTipoUtente(int tipoUtente) {this.tipoUtente = tipoUtente;}
+
+
+    public LoginResult loginUtente(String username, String password) throws SQLException, ClassNotFoundException {
+        UtenteDAO utenteDao = new UtenteDAO();
+        LoginResult result = utenteDao.login(username, password);
+
+        if (result.isSuccess()) {
+            this.username = result.getUsername();
+            this.nome = result.getNome();
+            this.cognome = result.getCognome();
+            this.tipoUtente = result.getTipoUtente();
+        }
+
+        return result;
+    }
 
 }
 
