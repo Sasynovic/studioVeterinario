@@ -21,6 +21,8 @@ public class ProCMS {
     private JButton modificaProfiloButton;
     private JLabel welcomeLabel;
 
+    private static Utilities utilities = new Utilities();
+
     public ProCMS(JFrame frame, String nome, String cognome, String username) {
         initializeMainPanel();
         createWelcomeLabel(nome, cognome);
@@ -52,8 +54,8 @@ public class ProCMS {
     //visualizzazione
     private void createAnimalsSection() {
         JPanel animaliPanel = createSectionPanel("Operazioni Principali");
-        aggiungiAnimaleButton = createButton("Aggiungi Animale", new Color(70, 130, 180));
-        effettuaPrenotazioneButton = createButton("Effettua Prenotazione", new Color(186, 85, 211));
+        aggiungiAnimaleButton = utilities.createButton("Aggiungi Animale", utilities.Blue);
+        effettuaPrenotazioneButton = utilities.createButton("Effettua Prenotazione",utilities.Green);
 
         animaliPanel.add(aggiungiAnimaleButton);
         animaliPanel.add(Box.createVerticalStrut(10));
@@ -66,8 +68,8 @@ public class ProCMS {
     //visualizzazione
     private void createActionsSection() {
         JPanel azioniPanel = createSectionPanel("Altre Azioni");
-        modificaProfiloButton = createButton("Modifica Profilo", new Color(255, 165, 0));
-        logoutButton = createButton("Logout", new Color(169, 169, 169));
+        modificaProfiloButton = utilities.createButton("Modifica Profilo", utilities.Orange);
+        logoutButton = utilities.createButton("Logout", utilities.DarkGray);
 
         azioniPanel.add(modificaProfiloButton);
         azioniPanel.add(Box.createVerticalStrut(10));
@@ -96,16 +98,11 @@ public class ProCMS {
             try {
                 new inserisciAnimale(frame, username).setVisible(true);
             } catch (SQLException | ClassNotFoundException ex) {
-                showErrorMessage("Errore nel'inserimento dell'animale: " + ex.getMessage());
+                utilities.showErrorMessage(proPanel,"Errore nel'inserimento dell'animale: " + ex.getMessage());
             }
         });
 
 
-    }
-
-    // funzione per visualizzare un messaggio di errore
-    private void showErrorMessage(String message) {
-        JOptionPane.showMessageDialog(proPanel, message, "Errore", JOptionPane.ERROR_MESSAGE);
     }
 
     //funzione per creare divisione nella gui tra le sezioni principali
@@ -122,21 +119,6 @@ public class ProCMS {
                 new Font("Segoe UI", Font.BOLD, 14),
                 new Color(100, 100, 100)));
         return panel;
-    }
-
-
-    // Funzione per creare bottoni tutti uguali
-    private static JButton createButton(String text, Color bgColor) {
-        JButton button = new JButton(text);
-        button.setAlignmentX(Component.CENTER_ALIGNMENT);
-        button.setBackground(bgColor);
-        button.setForeground(Color.WHITE);
-        button.setFocusPainted(false);
-        button.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        button.setMaximumSize(new Dimension(250, 35));
-        button.setBorder(BorderFactory.createEmptyBorder(8, 20, 8, 20));
-        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        return button;
     }
 
     // Dialog per inserire un animale
@@ -194,8 +176,8 @@ public class ProCMS {
             add(mainPanel, BorderLayout.CENTER);
             // Pannello dei pulsanti
 
-            JButton salvaButton = createButton("Salva", new Color(70, 130, 180));
-            JButton annullaButton = createButton("Anulla", new Color(159, 0, 0));
+            JButton salvaButton = utilities.createButton(("Salva"), new Color(70, 130, 180));
+            JButton annullaButton = utilities.createButton(("Anulla"), new Color(159, 0, 0));
 
             mainPanel.add(annullaButton);
             mainPanel.add(salvaButton);

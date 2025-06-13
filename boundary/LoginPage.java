@@ -19,6 +19,8 @@ public class LoginPage {
 
     private JFrame frame; // riferimento al frame principale
 
+    private static Utilities utilities = new Utilities();
+
     public LoginPage(JFrame frame) {
         this.frame = frame;
 
@@ -43,23 +45,9 @@ public class LoginPage {
         passwordPasswordField.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         passwordPasswordField.setBorder(BorderFactory.createTitledBorder("Password"));
 
-        loginButton = new JButton("Accedi");
-        loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        loginButton.setBackground(new Color(70, 130, 180));
-        loginButton.setForeground(Color.WHITE);
-        loginButton.setFocusPainted(false);
-        loginButton.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        loginButton.setMaximumSize(new Dimension(200, 40));
-        loginButton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        loginButton = utilities.createButton("Login", utilities.Blue);
 
-        backButton = new JButton("Indietro");
-        backButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        backButton.setBackground(new Color(180, 70, 70));
-        backButton.setForeground(Color.WHITE);
-        backButton.setFocusPainted(false);
-        backButton.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        backButton.setMaximumSize(new Dimension(200, 40));
-        backButton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        backButton = utilities.createButton("Indietro", utilities.Red);
 
         loginPanel.add(titleLabel);
         loginPanel.add(usernameTextField);

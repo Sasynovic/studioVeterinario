@@ -12,6 +12,8 @@ public class Homepage {
     private JLabel titleLabel;
     private JLabel logoLabel;
 
+    private static Utilities utilities = new Utilities();
+
     public Homepage() {
         // Inizializzazione pannello principale
         homepagePanel = new JPanel();
@@ -38,13 +40,8 @@ public class Homepage {
         titleLabel.setForeground(new Color(50, 50, 50));
         titleLabel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
 
-        // Pulsante Login
-        loginButton = new JButton("Login");
-        styleButton(loginButton, new Color(70, 130, 180));
-
-        // Pulsante Registrati
-        registratiButton = new JButton("Registrati");
-        styleButton(registratiButton, new Color(60, 179, 113));
+        loginButton = utilities.createButton("Login", utilities.Blue);
+        registratiButton = utilities.createButton("Registrati", utilities.Green);
 
         // Aggiunta componenti
         homepagePanel.add(logoLabel);
@@ -78,15 +75,5 @@ public class Homepage {
 
     public JPanel getHomepagePanel() {
         return homepagePanel;
-    }
-
-    private void styleButton(JButton button, Color backgroundColor) {
-        button.setAlignmentX(Component.CENTER_ALIGNMENT);
-        button.setBackground(backgroundColor);
-        button.setForeground(Color.WHITE);
-        button.setFocusPainted(false);
-        button.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        button.setMaximumSize(new Dimension(200, 40));
-        button.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
     }
 }

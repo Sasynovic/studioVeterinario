@@ -8,7 +8,9 @@ import java.awt.event.FocusEvent;
 import java.io.File;
 import java.util.regex.Pattern;
 
-import database.UtenteDAO;
+import controller.UtenteController;
+
+import boundary.Utilities;
 
 public class RegisterPage {
     private JPanel registerPanel;
@@ -33,9 +35,13 @@ public class RegisterPage {
 
     private JFrame frame;
 
+    Utilities utilities = new Utilities();
+
     // Pattern per validazione email
     private static final Pattern EMAIL_PATTERN =
-            Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
+            // Validazione dell'indirizzo email con regex conforme agli standard comuni.
+            // Accetta lettere, numeri e simboli consentiti prima della @ e un dominio valido con TLD.
+            Pattern.compile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
 
     public RegisterPage(JFrame frame) {
         this.frame = frame;
@@ -71,18 +77,11 @@ public class RegisterPage {
         mostraPasswordCheckBox.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         // Bottoni
-        registratiButton = new JButton("Registrati");
-        styleButton(registratiButton);
+        registratiButton = utilities.createButton("Registrati", new Color(70, 130, 180));
+        backButton = utilities.createButton("Indietro", new Color(180, 70, 70));
+
         registratiButton.setEnabled(false); // Disabilitato inizialmente
 
-        backButton = new JButton("Indietro");
-        backButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        backButton.setBackground(new Color(180, 70, 70));
-        backButton.setForeground(Color.WHITE);
-        backButton.setFocusPainted(false);
-        backButton.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        backButton.setMaximumSize(new Dimension(200, 40));
-        backButton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
     }
 
     private void setupLayout() {
@@ -254,12 +253,12 @@ public class RegisterPage {
         registratiButton.addActionListener(e -> {
             if (validateAllFields()) {
                 try {
-                    new UtenteDAO().registrazione(
+                   new UtenteController().addUser(
                             getUsername(),
+                            getPassword(),
                             getNome(),
                             getCognome(),
                             getEmail(),
-                            getPassword(),
                             getImmagineProfiloPath()
                     );
 
@@ -295,8 +294,8 @@ public class RegisterPage {
             setStatusLabel(usernameStatusLabel, "Username richiesto", Color.RED);
         } else if (username.length() < 3) {
             setStatusLabel(usernameStatusLabel, "Username troppo corto (min 3 caratteri)", Color.RED);
-        } else if (username.length() > 20) {
-            setStatusLabel(usernameStatusLabel, "Username troppo lungo (max 20 caratteri)", Color.RED);
+        } else if (username.length() > 45) {
+            setStatusLabel(usernameStatusLabel, "Username troppo lungo (max 45 caratteri)", Color.RED);
         } else {
             setStatusLabel(usernameStatusLabel, "✓ Username valido", new Color(34, 139, 34));
         }
@@ -412,15 +411,6 @@ public class RegisterPage {
         return field;
     }
 
-    private void styleButton(JButton button) {
-        button.setAlignmentX(Component.CENTER_ALIGNMENT);
-        button.setBackground(new Color(70, 130, 180));
-        button.setForeground(Color.WHITE);
-        button.setFocusPainted(false);
-        button.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        button.setMaximumSize(new Dimension(200, 40));
-        button.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
-    }
 
     // Getter methods esistenti
     public JPanel getRegisterPanel() { return registerPanel; }
