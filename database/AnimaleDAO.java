@@ -9,10 +9,10 @@ public class AnimaleDAO {
 
     public void create(Animale animale) throws SQLException, ClassNotFoundException {
         String query = "INSERT INTO animale (chip, nome, tipo, razza, colore, dataNascita, usernameUtente) " +
-                "VALUES (?, ?, ?, ?, ?, ?)";
+                "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DBConnectionManager.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+            PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setInt(1, animale.getChip());
             stmt.setString(2, animale.getNome());
@@ -22,6 +22,7 @@ public class AnimaleDAO {
             stmt.setDate(6, new java.sql.Date(animale.getDataNascita().getTime()));
             stmt.setString(7, animale.getUsernameUtente());
 
+            stmt.executeUpdate();
         } catch (SQLException e ) {
             throw new SQLException("Inserimento fallito : " + e.getMessage());
         }

@@ -262,7 +262,22 @@ public class ProCMS {
             mainPanel.add(nomeField);
 
             mainPanel.add(new JLabel("Tipo:"));
-            JComboBox<String> tipoCombo = new JComboBox<>(new String[]{"Cane", "Gatto", "Altro"});
+            JComboBox<String> tipoCombo = new JComboBox<>(new String[]{
+                    "Cane",
+                    "Gatto",
+                    "Coniglio",
+                    "Criceto",
+                    "Uccello",
+                    "Pesce",
+                    "Tartaruga",
+                    "Furetto",
+                    "Porcellino d'India",
+                    "Ratto",
+                    "Serpente",
+                    "Cavallo",
+                    "Altro"
+            });
+            tipoCombo.setSelectedIndex(0);
             mainPanel.add(tipoCombo);
 
             mainPanel.add(new JLabel("Razza:"));
@@ -273,52 +288,80 @@ public class ProCMS {
             JTextField coloreField = new JTextField();
             mainPanel.add(coloreField);
 
-            mainPanel.add(new JLabel("Data di Nascita (dd/MM/yyyy):"));
+            mainPanel.add(new JLabel("Data di Nascita (yyyy/MM/gg):"));
             JTextField dataNascitaField = new JTextField();
             mainPanel.add(dataNascitaField);
 
             add(mainPanel, BorderLayout.CENTER);
             // Pannello dei pulsanti
 
-            int chip;
-            // assicuriamoci sia un intero
-            try {
-                chip = Integer.parseInt(chipField.getText());
-                if(chip <= 0) {
-                    JOptionPane.showMessageDialog(this, "Il chip deve essere un numero intero positivo.");
-                    return;
-                }
-            } catch (NumberFormatException e) {
-                JOptionPane.showMessageDialog(this, "Il chip deve essere un numero intero.");
-                return;
-            }
-            String nome = nomeField.getText();
-            String tipo = (String) tipoCombo.getSelectedItem();
-            String razza = razzaField.getText();
-            String colore = coloreField.getText();
+            JButton salvaButton = new JButton("Salva");
+            salvaButton.setBackground(new Color(70, 130, 180));
+            salvaButton.setForeground(Color.WHITE);
+            salvaButton.setFocusPainted(false);
+            salvaButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
+            salvaButton.setMaximumSize(new Dimension(100, 35));
+            salvaButton.setBorder(BorderFactory.createEmptyBorder(8, 20, 8, 20));
+            salvaButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
-            String dataNascitaStr = dataNascitaField.getText();
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-            Date dataNascita;
-            // assicuriamoci sia valido l'inserimento della data
-            try {
-                dataNascita = sdf.parse(dataNascitaStr);
-                if (dataNascita.after(new Date())) {
-                    JOptionPane.showMessageDialog(this, "La data di nascita non può essere futura.");
-                    return;
-                }
-            } catch (ParseException e) {
-                JOptionPane.showMessageDialog(this, "Formato data non valido. Usa gg/MM/aaaa.");
-                return;
-            }
 
-            if (nome.isEmpty() || tipo.isEmpty() || razza.isEmpty() || colore.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Tutti i campi sono obbligatori.");
-                return;
-            }else{
-                AnimaleController animaleController = new AnimaleController();
-                animaleController.addAnimale(chip, nome, tipo, razza, colore, dataNascita, usernameProprietario);
-            }
+            JButton annullaButton = new JButton("Annulla");
+            annullaButton.setBackground(new Color(169, 169, 169));
+            annullaButton.setForeground(Color.WHITE);
+            annullaButton.setFocusPainted(false);
+            annullaButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
+            annullaButton.setMaximumSize(new Dimension(100, 35));
+            annullaButton.setBorder(BorderFactory.createEmptyBorder(8, 20, 8, 20));
+            annullaButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+            mainPanel.add(annullaButton);
+            mainPanel.add(salvaButton);
+
+            salvaButton.addActionListener(e -> {
+                    // Estrai e valida i dati
+                    String chipText = chipField.getText().trim();
+                    String nome = nomeField.getText().trim();
+                    Object selectedItem = tipoCombo.getSelectedItem();
+                    String tipo = (selectedItem != null) ? selectedItem.toString() : "";
+                    String razza = razzaField.getText().trim();
+                    String colore = coloreField.getText().trim();
+                    String dataNascitaText = dataNascitaField.getText().trim();
+
+                    // Controlla campi vuoti
+                    if (chipText.isEmpty() || nome.isEmpty() || tipo.isEmpty() || razza.isEmpty() || colore.isEmpty() || dataNascitaText.isEmpty()) {
+                        JOptionPane.showMessageDialog(this, "Tutti i campi sono obbligatori.");
+                        return;
+                    }
+
+                    int chip;
+                    try {
+                        chip = Integer.parseInt(chipText);
+                    } catch (NumberFormatException ex) {
+                        JOptionPane.showMessageDialog(this, "Il chip deve essere un numero intero.");
+                        return;
+                    }
+
+                    Date dataNascita;
+                    try {
+                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+                        sdf.setLenient(false);
+                        dataNascita = sdf.parse(dataNascitaText);
+                    } catch (ParseException ex) {
+                        JOptionPane.showMessageDialog(this, "Formato data non valido. Usa aaaa/MM/gg.");
+                        return;
+                    }
+
+                    // Salvataggio
+                    AnimaleController animaleController = new AnimaleController();
+                    try {
+                        animaleController.addAnimale(chip, nome, tipo, razza, colore, dataNascita, usernameProprietario);
+                        JOptionPane.showMessageDialog(this, "Animale inserito con successo.");
+                        dispose();
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(this, "Errore durante il salvataggio: " + ex.getMessage());
+                    }
+                });
+            annullaButton.addActionListener(e -> dispose());
         }
     }
 

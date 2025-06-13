@@ -19,6 +19,7 @@ public class Animale {
     public Animale(int chip, String nome, String tipo,String razza, String colore, Date dataNascita, String usernameUtente) {
         this.chip = chip;
         this.nome = nome;
+        this.tipo = tipo;
         this.razza = razza;
         this.colore = colore;
         this.dataNascita = dataNascita;
