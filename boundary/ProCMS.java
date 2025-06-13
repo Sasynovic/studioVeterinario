@@ -13,10 +13,6 @@ import java.util.*;
 // solo i controller vanno importanti nella GUI
 import controller.AnimaleController;
 
-
-import entity.Proprietario;
-import database.UtenteDAO;
-
 public class ProCMS {
     private JPanel proPanel;
     private JButton logoutButton;
@@ -87,14 +83,14 @@ public class ProCMS {
             frame.revalidate();
             frame.repaint();
         });
-
-        modificaProfiloButton.addActionListener(e -> {
-            try {
-                new ModificaProfiloDialog(frame, username).setVisible(true);
-            } catch (SQLException | ClassNotFoundException ex) {
-                showErrorMessage("Errore nell'apertura del dialogo di modifica profilo: " + ex.getMessage());
-            }
-        });
+//
+//        modificaProfiloButton.addActionListener(e -> {
+//            try {
+//                new ModificaProfiloDialog(frame, username).setVisible(true);
+//            } catch (SQLException | ClassNotFoundException ex) {
+//                showErrorMessage("Errore nell'apertura del dialogo di modifica profilo: " + ex.getMessage());
+//            }
+//        });
 
         aggiungiAnimaleButton.addActionListener(e -> {
             try {
@@ -107,10 +103,12 @@ public class ProCMS {
 
     }
 
+    // funzione per visualizzare un messaggio di errore
     private void showErrorMessage(String message) {
         JOptionPane.showMessageDialog(proPanel, message, "Errore", JOptionPane.ERROR_MESSAGE);
     }
 
+    //funzione per creare divisione nella gui tra le sezioni principali
     private JPanel createSectionPanel(String title) {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
@@ -126,8 +124,9 @@ public class ProCMS {
         return panel;
     }
 
-    //visualizzazione
-    private JButton createButton(String text, Color bgColor) {
+
+    // Funzione per creare bottoni tutti uguali
+    private static JButton createButton(String text, Color bgColor) {
         JButton button = new JButton(text);
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
         button.setBackground(bgColor);
@@ -138,106 +137,6 @@ public class ProCMS {
         button.setBorder(BorderFactory.createEmptyBorder(8, 20, 8, 20));
         button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         return button;
-    }
-
-    // Classe per la modifica del profilo (rimane invariata)
-    private static class ModificaProfiloDialog extends JDialog {
-        public ModificaProfiloDialog(JFrame parent, String username) throws SQLException, ClassNotFoundException {
-            super(parent, "Modifica Profilo", true);
-            setSize(500, 400);
-            setLocationRelativeTo(parent);
-
-            Proprietario u = new UtenteDAO().getUtenteByUsername(username);
-            initializeProfileDialog(u, parent, username);
-        }
-
-        private void initializeProfileDialog(Proprietario u, JFrame parent, String originalUsername) {
-            JPanel mainPanel = new JPanel(new BorderLayout());
-            mainPanel.setBackground(new Color(245, 250, 255));
-
-            JPanel fieldsPanel = createFieldsPanel(u);
-            JPanel buttonPanel = createButtonPanel(u, parent, originalUsername, fieldsPanel);
-
-            mainPanel.add(fieldsPanel, BorderLayout.CENTER);
-            mainPanel.add(buttonPanel, BorderLayout.SOUTH);
-            add(mainPanel);
-        }
-
-        private JPanel createFieldsPanel(Proprietario u) {
-            JPanel fieldsPanel = new JPanel();
-            fieldsPanel.setLayout(new GridLayout(6, 2, 10, 10));
-            fieldsPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-            fieldsPanel.setBackground(new Color(245, 250, 255));
-
-            fieldsPanel.add(new JLabel("Username:"));
-            fieldsPanel.add(new JTextField(u.getUsername()));
-            fieldsPanel.add(new JLabel("Nome:"));
-            fieldsPanel.add(new JTextField(u.getNome()));
-            fieldsPanel.add(new JLabel("Cognome:"));
-            fieldsPanel.add(new JTextField(u.getCognome()));
-            fieldsPanel.add(new JLabel("Email:"));
-            fieldsPanel.add(new JTextField(u.getEmail()));
-            fieldsPanel.add(new JLabel("Password:"));
-            fieldsPanel.add(new JPasswordField(u.getPassword()));
-            fieldsPanel.add(new JLabel("Immagine Profilo:"));
-            fieldsPanel.add(new JTextField(u.getImmagineProfilo()));
-
-            return fieldsPanel;
-        }
-
-        private JPanel createButtonPanel(Proprietario u, JFrame parent, String originalUsername, JPanel fieldsPanel) {
-            JPanel buttonPanel = new JPanel(new FlowLayout());
-            buttonPanel.setBackground(new Color(245, 250, 255));
-
-            JButton saveButton = createStyledButton("Salva", new Color(70, 130, 180));
-            JButton cancelButton = createStyledButton("Annulla", new Color(169, 169, 169));
-
-            saveButton.addActionListener(e -> handleSaveProfile(fieldsPanel, u, parent, originalUsername));
-            cancelButton.addActionListener(e -> dispose());
-
-            buttonPanel.add(saveButton);
-            buttonPanel.add(cancelButton);
-            return buttonPanel;
-        }
-
-        private JButton createStyledButton(String text, Color bgColor) {
-            JButton button = new JButton(text);
-            button.setBackground(bgColor);
-            button.setForeground(Color.WHITE);
-            button.setFocusPainted(false);
-            button.setFont(new Font("Segoe UI", Font.BOLD, 12));
-            return button;
-        }
-
-        private void handleSaveProfile(JPanel fieldsPanel, Proprietario originalUser, JFrame parent, String originalUsername) {
-            try {
-                Component[] components = fieldsPanel.getComponents();
-                String newUsername = ((JTextField) components[1]).getText().trim();
-                String newNome = ((JTextField) components[3]).getText().trim();
-                String newCognome = ((JTextField) components[5]).getText().trim();
-                String newEmail = ((JTextField) components[7]).getText().trim();
-                String newPassword = new String(((JPasswordField) components[9]).getPassword()).trim();
-                String newImmagine = ((JTextField) components[11]).getText().trim();
-
-                if (newPassword.isEmpty()) {
-                    newPassword = null;
-                }
-
-                Proprietario updatedUser = new Proprietario(newUsername, newNome, newCognome, newEmail, newPassword, newImmagine);
-                UtenteDAO dao = new UtenteDAO();
-                dao.aggiornaUtente(updatedUser, originalUsername);
-
-                JOptionPane.showMessageDialog(this, "Profilo aggiornato con successo.", "Successo", JOptionPane.INFORMATION_MESSAGE);
-                dispose();
-
-                parent.setContentPane(new ProCMS(parent, newNome, newCognome, newUsername).getProPanel());
-                parent.revalidate();
-                parent.repaint();
-
-            } catch (SQLException | ClassNotFoundException ex) {
-                JOptionPane.showMessageDialog(this, "Errore durante l'aggiornamento del profilo: " + ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
-            }
-        }
     }
 
     // Dialog per inserire un animale
@@ -295,24 +194,8 @@ public class ProCMS {
             add(mainPanel, BorderLayout.CENTER);
             // Pannello dei pulsanti
 
-            JButton salvaButton = new JButton("Salva");
-            salvaButton.setBackground(new Color(70, 130, 180));
-            salvaButton.setForeground(Color.WHITE);
-            salvaButton.setFocusPainted(false);
-            salvaButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
-            salvaButton.setMaximumSize(new Dimension(100, 35));
-            salvaButton.setBorder(BorderFactory.createEmptyBorder(8, 20, 8, 20));
-            salvaButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-
-
-            JButton annullaButton = new JButton("Annulla");
-            annullaButton.setBackground(new Color(169, 169, 169));
-            annullaButton.setForeground(Color.WHITE);
-            annullaButton.setFocusPainted(false);
-            annullaButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
-            annullaButton.setMaximumSize(new Dimension(100, 35));
-            annullaButton.setBorder(BorderFactory.createEmptyBorder(8, 20, 8, 20));
-            annullaButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            JButton salvaButton = createButton("Salva", new Color(70, 130, 180));
+            JButton annullaButton = createButton("Anulla", new Color(159, 0, 0));
 
             mainPanel.add(annullaButton);
             mainPanel.add(salvaButton);
