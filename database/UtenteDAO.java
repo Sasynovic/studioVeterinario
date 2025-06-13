@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import entity.Utente;
-import control.LoginResult;
+import controller.LoginResult;
 import entity.Proprietario;
 
 public class UtenteDAO {
