@@ -62,6 +62,19 @@ public class Utente {
 
         return result;
     }
+    public void save(Utente utente) throws SQLException, ClassNotFoundException {
+        UtenteDAO utenteDAO = new UtenteDAO();
+        try{
+            utenteDAO.create(utente);
+        }catch (SQLException e) {
+            e.printStackTrace();
+            throw e; // Rilancia l'eccezione per gestirla a livello superiore
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            throw e; // Rilancia l'eccezione per gestirla a livello superiore
+        }
+    }
+
 
 }
 

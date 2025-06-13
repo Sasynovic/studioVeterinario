@@ -43,55 +43,71 @@ public class UtenteDAO {
         }
     }
 
-    public Utente registrazione(String username, String nome, String cognome, String email, String password, String immagineProfilo) throws SQLException, ClassNotFoundException {
+    public void create(Utente utente) throws SQLException, ClassNotFoundException {
         String query = "INSERT INTO utente (username, nome, cognome, email, password, immagineProfilo, tipoUtente) VALUES (?, ?, ?, ?, ?, ?, 3)";
 
-        // Controlla se l'username esiste già
-        String checkQuery = "SELECT COUNT(*) FROM utente WHERE username = ?";
-        try (
-                Connection conn = DBConnectionManager.getConnection();
-                PreparedStatement checkStmt = conn.prepareStatement(checkQuery)
-        ) {
-            checkStmt.setString(1, username);
-            try (ResultSet rs = checkStmt.executeQuery()) {
-                if (rs.next() && rs.getInt(1) > 0) {
-                    throw new SQLException("Username già esistente.");
-                }
-            }
-        }
-
-        if (username == null || username.isEmpty() ||
-                nome == null || nome.isEmpty() ||
-                cognome == null || cognome.isEmpty() ||
-                email == null || email.isEmpty() ||
-                password == null || password.isEmpty()) {
+        // Validazione dei campi obbligatori
+        if (utente.getUsername() == null || utente.getUsername().isEmpty() ||
+                utente.getNome() == null || utente.getNome().isEmpty() ||
+                utente.getCognome() == null || utente.getCognome().isEmpty() ||
+                utente.getEmail() == null || utente.getEmail().isEmpty() ||
+                utente.getPassword() == null || utente.getPassword().isEmpty()) {
             throw new SQLException("Tutti i campi sono obbligatori.");
         }
 
-        try (
-                Connection conn = DBConnectionManager.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(query)
-        ) {
-            stmt.setString(1, username);
-            stmt.setString(2, nome);
-            stmt.setString(3, cognome);
-            stmt.setString(4, email);
-            stmt.setString(5, password);
-            if (immagineProfilo == null || immagineProfilo.isEmpty()) {
-                immagineProfilo = "default.png"; // Imposta un'immagine di default se non fornita
-            }
-            stmt.setString(6, immagineProfilo);
+        try (Connection conn = DBConnectionManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
 
-            int rowsAffected = stmt.executeUpdate();
-            if (rowsAffected > 0) {
-                return new Proprietario(username, nome, cognome, email, password, immagineProfilo);
-            } else {
-                throw new SQLException("Registrazione fallita.");
+            stmt.setString(1, utente.getUsername());
+            stmt.setString(2, utente.getNome());
+            stmt.setString(3, utente.getCognome());
+            stmt.setString(4, utente.getEmail());
+            stmt.setString(5, utente.getPassword());
+            if (utente.getImmagineProfilo() == null || utente.getImmagineProfilo().isEmpty()) {
+                utente.setImmagineProfilo("default.png"); // Imposta un'immagine di default se non fornita
+            }
+            stmt.setString(6, utente.getImmagineProfilo());
+            stmt.executeUpdate();
+        }catch (SQLException e) {
+            throw new SQLException("Inserimento fallito: " + e.getMessage());
+        } catch (ClassNotFoundException e) {
+            throw new ClassNotFoundException("Driver JDBC non trovato: " + e.getMessage());
+        }
+    }
+
+    public List<Proprietario> read(String username) throws SQLException, ClassNotFoundException {
+        String query = "SELECT username, nome, cognome, email, password, immagineProfilo FROM utente";
+        if (username != null && !username.trim().isEmpty()) {
+            query += " WHERE username = ?";
+        }
+
+        try (Connection conn = DBConnectionManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, username);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    List<Proprietario> proprietari = new ArrayList<>();
+                    Proprietario proprietario = new Proprietario();
+
+                    proprietario.setUsername(rs.getString("username"));
+                    proprietario.setNome(rs.getString("nome"));
+                    proprietario.setCognome(rs.getString("cognome"));
+                    proprietario.setEmail(rs.getString("email"));
+                    proprietario.setImmagineProfilo(rs.getString("immagineProfilo"));
+
+                    proprietari.add(proprietario);
+
+                    return proprietari;
+                } else {
+                    throw new SQLException("Errore durante il recupero degli utenti.");
+                }
             }
         }
     }
 
-    public void aggiornaUtente(Utente utente, String username) throws SQLException, ClassNotFoundException {
+    public void update(Utente utente, String username) throws SQLException, ClassNotFoundException {
         // Lista per costruire dinamicamente la query
         List<String> setClauses = new ArrayList<>();
         List<Object> parameters = new ArrayList<>();
@@ -141,29 +157,5 @@ public class UtenteDAO {
         }
     }
 
-    public Proprietario getUtenteByUsername(String username) throws SQLException, ClassNotFoundException {
-        String query = "SELECT username, nome, cognome, email, password, immagineProfilo FROM utente WHERE username = ?";
-
-        try (Connection conn = DBConnectionManager.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
-
-            stmt.setString(1, username);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    Proprietario p = new Proprietario();
-                    p.setUsername(rs.getString("username"));
-                    p.setNome(rs.getString("nome"));
-                    p.setCognome(rs.getString("cognome"));
-                    p.setEmail(rs.getString("email"));
-                    p.setImmagineProfilo(rs.getString("immagineProfilo"));
-
-                    return p;
-                } else {
-                    throw new SQLException("Utente non trovato con username: " + username);
-                }
-            }
-        }
-    }
 }
 
