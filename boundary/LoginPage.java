@@ -7,7 +7,7 @@ import java.awt.event.ActionListener;
 import java.sql.SQLException;
 
 import controller.LoginResult;
-import controller.LoginController;
+import controller.UtenteController;
 
 public class LoginPage {
     private JPanel loginPanel;
@@ -85,7 +85,7 @@ public class LoginPage {
                     return;
                 }
 
-                LoginController loginc = new LoginController();
+                UtenteController loginc = new UtenteController();
                 try {
                     LoginResult user = loginc.login(username, password);
 
