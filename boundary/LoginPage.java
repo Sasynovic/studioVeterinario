@@ -6,8 +6,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
 
-import control.LoginResult;
-import database.UtenteDAO;
+import controller.LoginResult;
+import controller.LoginController;
 
 public class LoginPage {
     private JPanel loginPanel;
@@ -85,9 +85,9 @@ public class LoginPage {
                     return;
                 }
 
-                UtenteDAO utenteDao = new UtenteDAO();
+                LoginController loginc = new LoginController();
                 try {
-                    LoginResult user = utenteDao.login(username, password);
+                    LoginResult user = loginc.login(username, password);
 
                     if (user.isSuccess()) {
                         JOptionPane.showMessageDialog(frame,
