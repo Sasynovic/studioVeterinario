@@ -72,4 +72,13 @@ public class Prenotazione {
         }
     }
 
+    public void inserisciPrenotazioneUtente(Prenotazione p){
+        PrenotazioneDAO prenotazioneDAO = new PrenotazioneDAO();
+        try{
+            prenotazioneDAO.update(p);
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }
