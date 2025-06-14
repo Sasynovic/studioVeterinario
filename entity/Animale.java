@@ -52,7 +52,7 @@ public class Animale {
         return "Nome : " + nome + " - Chip : " + chip;
     }
 
-    public List<Animale> getAllAnimals(String usernameUtente) {
+    public List<Animale> getAllAnimali(String usernameUtente) {
         AnimaleDAO animaleDAO = new AnimaleDAO();
         try {
             return animaleDAO.read(usernameUtente);

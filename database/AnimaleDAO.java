@@ -32,7 +32,7 @@ public class AnimaleDAO {
     public List<Animale> read(String nome) throws SQLException, ClassNotFoundException {
         List<Animale> animali = new ArrayList<>();
 
-        String query = "SELECT a.chip, a.nome, a.razza, a.colore, a.dataNascita, a.usernameUtente,u.nome , u.cognome " +
+        String query = "SELECT a.chip, a.nome, a.tipo, a.colore, a.razza,  a.dataNascita, a.usernameUtente " +
                 "FROM animale a " +
                 "LEFT JOIN utente u ON u.username = a.usernameUtente " +
                 "WHERE 1=1";
@@ -40,7 +40,7 @@ public class AnimaleDAO {
         boolean hasUser = nome != null && !nome.trim().isEmpty();
 
         if (hasUser) {
-              query += " AND LOWER(a.usernameUtente) = ? OR LOWER(TRIM(CONCAT(u.nome, u.cognome))) = ?"; // Modifica per cercare per username
+              query += " AND a.usernameUtente = ?"; // Modifica per cercare per username
         }
 
         Connection conn = null;
