@@ -1,49 +1,75 @@
 package entity;
 
+import java.util.Date;
+import java.util.List;
+
+import database.PrenotazioneDAO;
+
+
 public class Prenotazione {
 
-    private int id;
-    private int stato;
-    private String tipoVisita;
-    private String descrizione;
-    private float costo;
+    private Date data;
+    private int orario;
+    private int idStato;
     private int chipAnimale;
-    private String usernameVeterinario;
-    private int idSlot;
+    private int idVisita;
 
     public Prenotazione(){};
 
-    public Prenotazione(int id, String tipoVisita, int chipAnimale, int idSlot) {
-        this.id = id;
-        this.stato = 1;
-        this.tipoVisita = tipoVisita;
-        this.chipAnimale = chipAnimale;
-        this.idSlot = idSlot;
+    public Date getData() {
+        return data;
+    }
+    public void setData(Date data) {
+        this.data = data;
     }
 
-    public int getId() {return id;}
-    public void setId(int id) {this.id = id;}
+    public int getOrario() {
+        return orario;
+    }
+    public void setOrario(int orario) {
+        this.orario = orario;
+    }
 
-    public int getStato() {return stato;}
-    public void setStato(int stato) {this.stato = stato;}
+    public int getIdStato() {
+        return idStato;
+    }
+    public void setIdStato(int idStato) {
+        this.idStato = idStato;
+    }
 
-    public String getTipoVisita() {return tipoVisita;}
-    public void setTipoVisita(String tipoVisita) {this.tipoVisita = tipoVisita;}
+    public int getChipAnimale() {
+        return chipAnimale;
+    }
+    public void setChipAnimale(int chipAnimale) {
+        this.chipAnimale = chipAnimale;
+    }
 
-    public String getDescrizione() {return descrizione;}
-    public void setDescrizione(String descrizione) {this.descrizione = descrizione;}
+    public int getIdVisita() {
+        return idVisita;
+    }
+    public void setIdVisita(int idVisita) {
+        this.idVisita = idVisita;
+    }
 
-    public float getCosto() {return costo;}
-    public void setCosto(float costo) {this.costo = costo;}
-
-    public int getChipAnimale() {return chipAnimale;}
-    public void setChipAnimale(int chipAnimale) {this.chipAnimale = chipAnimale;}
-
-    public String getUsernameVeterinario() {return usernameVeterinario;}
-    public void setUsernameVeterinario(String usernameVeterinario) {this.usernameVeterinario = usernameVeterinario;}
-
-    public int getIdSlot() {return idSlot;}
-    public void setIdSlot(int idSlot) {this.idSlot = idSlot;}
-
+    public List<Prenotazione> getAllPrenotazioni(Date data, int stato) {
+        PrenotazioneDAO prenotazioneDAO = new PrenotazioneDAO();
+        try {
+            // Conversione sicura da java.util.Date a java.sql.Date
+            java.sql.Date sqlDate = null;
+            if (data != null) {
+                // Se la data è già un java.sql.Date, usala direttamente
+                if (data instanceof java.sql.Date) {
+                    sqlDate = (java.sql.Date) data;
+                } else {
+                    // Altrimenti converti da java.util.Date
+                    sqlDate = new java.sql.Date(data.getTime());
+                }
+            }
+            return prenotazioneDAO.read(sqlDate, stato);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 
 }
