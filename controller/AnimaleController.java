@@ -1,10 +1,10 @@
 package controller;
 
+import entity.Animale;
+
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
-import entity.Animale;
-import entity.Prenotazione;
 
 public class AnimaleController {
 
