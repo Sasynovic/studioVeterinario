@@ -1,9 +1,13 @@
 package boundary;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 
 // importiamo le exception necessarie per la gestione degli errori
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -26,10 +30,11 @@ import entity.Utente;
 public class ProCMS {
     private JPanel proPanel;
     private JButton logoutButton;
-    private JButton aggiungiAnimaleButton;
+
     private JButton effettuaPrenotazioneButton;
     private JButton modificaProfiloButton;
     private JLabel welcomeLabel;
+    private JButton visualizzaAnimaliButton;
 
     private static Utilities utilities = new Utilities();
 
@@ -64,13 +69,13 @@ public class ProCMS {
     //visualizzazione
     private void createAnimalsSection() {
         JPanel animaliPanel = utilities.createSectionPanel("Operazioni Principali");
-        aggiungiAnimaleButton = utilities.createButton("Aggiungi Animale", utilities.Blue);
+        visualizzaAnimaliButton = utilities.createButton("Visualizza Animali", utilities.Blue);
         effettuaPrenotazioneButton = utilities.createButton("Effettua Prenotazione",utilities.Green);
 
-        animaliPanel.add(aggiungiAnimaleButton);
+        animaliPanel.add(effettuaPrenotazioneButton);
         animaliPanel.add(Box.createVerticalStrut(10));
 
-        animaliPanel.add(effettuaPrenotazioneButton);
+        animaliPanel.add(visualizzaAnimaliButton);
         animaliPanel.add(Box.createVerticalStrut(10));
 
         proPanel.add(animaliPanel);
@@ -79,7 +84,7 @@ public class ProCMS {
     private void createActionsSection() {
         JPanel azioniPanel = utilities.createSectionPanel("Altre Azioni");
         modificaProfiloButton = utilities.createButton("Modifica Profilo", utilities.Orange);
-        logoutButton = utilities.createButton("Logout", utilities.DarkGray);
+        logoutButton = utilities.createButton("Logout", utilities.Red);
 
         azioniPanel.add(modificaProfiloButton);
         azioniPanel.add(Box.createVerticalStrut(10));
@@ -97,14 +102,6 @@ public class ProCMS {
             frame.repaint();
         });
 
-        aggiungiAnimaleButton.addActionListener(e -> {
-            try {
-                new inserisciAnimale(frame, username).setVisible(true);
-            } catch (SQLException | ClassNotFoundException ex) {
-                utilities.showErrorMessage(proPanel,"Errore nel'inserimento dell'animale: " + ex.getMessage());
-            }
-        });
-
         effettuaPrenotazioneButton.addActionListener(e -> {
             try {
                 new effettuaPrenotazione(frame, username).setVisible(true);
@@ -120,114 +117,112 @@ public class ProCMS {
                 utilities.showErrorMessage(proPanel,"Errore durante la modifica del profilo: " + ex.getMessage());
             }
         });
+
+        visualizzaAnimaliButton.addActionListener(e -> {
+            try {
+                new visualizzaAnimali(frame, username).setVisible(true);
+            } catch (SQLException | ClassNotFoundException ex) {
+                utilities.showErrorMessage(proPanel,"Errore durante la visualizzazione degli animali: " + ex.getMessage());
+            }
+        });
     }
 
     // Dialog per inserire un animale
-    private static class inserisciAnimale extends JDialog{
+    private static class inserisciAnimale extends JDialog {
         public inserisciAnimale(JFrame parente, String usernameProprietario) throws SQLException, ClassNotFoundException {
             super(parente, "Inserisci Animale", true);
-            setSize(500, 400);
-            setLocationRelativeTo(parente);
-            setLayout(new BorderLayout());
 
-            JPanel mainPanel = new JPanel(new GridLayout(0, 2, 10, 10));
-            mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-            mainPanel.setBackground(new Color(245, 250, 255));
+            // Form principale come sezione coerente
+            JPanel formPanel = utilities.createSectionPanel("Inserisci Animale");
+            formPanel.setLayout(new GridLayout(0, 2, 10, 10));
 
-            // Campi per l'inserimento
-            mainPanel.add(new JLabel("Chip:"));
+            // Campi input
+            formPanel.add(new JLabel("Chip:"));
             JTextField chipField = new JTextField();
-            mainPanel.add(chipField);
+            formPanel.add(chipField);
 
-            mainPanel.add(new JLabel("Nome:"));
+            formPanel.add(new JLabel("Nome:"));
             JTextField nomeField = new JTextField();
-            mainPanel.add(nomeField);
+            formPanel.add(nomeField);
 
-            mainPanel.add(new JLabel("Tipo:"));
-            JComboBox<String> tipoCombo = new JComboBox<>(new String[]{
-                    "Cane",
-                    "Gatto",
-                    "Coniglio",
-                    "Criceto",
-                    "Uccello",
-                    "Pesce",
-                    "Tartaruga",
-                    "Furetto",
-                    "Porcellino d'India",
-                    "Ratto",
-                    "Serpente",
-                    "Cavallo",
-                    "Altro"
-            });
+            formPanel.add(new JLabel("Tipo:"));
+            JComboBox<String> tipoCombo = new JComboBox<>(utilities.animalTypes);
             tipoCombo.setSelectedIndex(0);
-            mainPanel.add(tipoCombo);
+            formPanel.add(tipoCombo);
 
-            mainPanel.add(new JLabel("Razza:"));
+            formPanel.add(new JLabel("Razza:"));
             JTextField razzaField = new JTextField();
-            mainPanel.add(razzaField);
+            formPanel.add(razzaField);
 
-            mainPanel.add(new JLabel("Colore:"));
+            formPanel.add(new JLabel("Colore:"));
             JTextField coloreField = new JTextField();
-            mainPanel.add(coloreField);
+            formPanel.add(coloreField);
 
-            mainPanel.add(new JLabel("Data di Nascita (yyyy/MM/gg):"));
+            formPanel.add(new JLabel("Data di Nascita (yyyy/MM/gg):"));
             JTextField dataNascitaField = new JTextField();
-            mainPanel.add(dataNascitaField);
+            formPanel.add(dataNascitaField);
 
-            add(mainPanel, BorderLayout.CENTER);
-            // Pannello dei pulsanti
+            // Pulsanti separati in pannello dedicato
+            JButton salvaButton = utilities.createButton("Salva", utilities.Blue);
+            JButton annullaButton = utilities.createButton("Annulla", utilities.Red);
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+            buttonPanel.add(annullaButton);
+            buttonPanel.add(salvaButton);
 
-            JButton salvaButton = utilities.createButton(("Salva"), utilities.Blue);
-            JButton annullaButton = utilities.createButton(("Anulla"), utilities.Red);
+            // Aggiunta ai bordi del dialog
+            getContentPane().setLayout(new BorderLayout());
+            getContentPane().add(formPanel, BorderLayout.CENTER);
+            getContentPane().add(buttonPanel, BorderLayout.SOUTH);
 
-            mainPanel.add(annullaButton);
-            mainPanel.add(salvaButton);
+            // Eventi
+            annullaButton.addActionListener(e -> dispose());
 
             salvaButton.addActionListener(e -> {
-                    // Estrai e valida i dati
-                    String chipText = chipField.getText().trim();
-                    String nome = nomeField.getText().trim();
-                    Object selectedItem = tipoCombo.getSelectedItem();
-                    String tipo = (selectedItem != null) ? selectedItem.toString() : "";
-                    String razza = razzaField.getText().trim();
-                    String colore = coloreField.getText().trim();
-                    String dataNascitaText = dataNascitaField.getText().trim();
+                // Estrai e valida i dati
+                String chipText = chipField.getText().trim();
+                String nome = nomeField.getText().trim();
+                Object selectedItem = tipoCombo.getSelectedItem();
+                String tipo = (selectedItem != null) ? selectedItem.toString() : "";
+                String razza = razzaField.getText().trim();
+                String colore = coloreField.getText().trim();
+                String dataNascitaText = dataNascitaField.getText().trim();
 
-                    // Controlla campi vuoti
-                    if (chipText.isEmpty() || nome.isEmpty() || tipo.isEmpty() || razza.isEmpty() || colore.isEmpty() || dataNascitaText.isEmpty()) {
-                        JOptionPane.showMessageDialog(this, "Tutti i campi sono obbligatori.");
-                        return;
-                    }
+                // Validazione campi
+                if (chipText.isEmpty() || nome.isEmpty() || tipo.isEmpty() || razza.isEmpty() || colore.isEmpty() || dataNascitaText.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Tutti i campi sono obbligatori.");
+                    return;
+                }
 
-                    int chip;
-                    try {
-                        chip = Integer.parseInt(chipText);
-                    } catch (NumberFormatException ex) {
-                        JOptionPane.showMessageDialog(this, "Il chip deve essere un numero intero.");
-                        return;
-                    }
+                int chip;
+                try {
+                    chip = Integer.parseInt(chipText);
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(this, "Il chip deve essere un numero intero.");
+                    return;
+                }
 
-                    Date dataNascita;
-                    try {
-                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
-                        sdf.setLenient(false);
-                        dataNascita = sdf.parse(dataNascitaText);
-                    } catch (ParseException ex) {
-                        JOptionPane.showMessageDialog(this, "Formato data non valido. Usa aaaa/MM/gg.");
-                        return;
-                    }
+                Date dataNascita;
+                try {
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+                    sdf.setLenient(false);
+                    dataNascita = sdf.parse(dataNascitaText);
+                } catch (ParseException ex) {
+                    JOptionPane.showMessageDialog(this, "Formato data non valido. Usa aaaa/MM/gg.");
+                    return;
+                }
 
-                    // Salvataggio
+                // Salvataggio
+                try {
                     AnimaleController animaleController = new AnimaleController();
-                    try {
-                        animaleController.addAnimale(chip, nome, tipo, razza, colore, dataNascita, usernameProprietario);
-                        JOptionPane.showMessageDialog(this, "Animale inserito con successo.");
-                        dispose();
-                    } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(this, "Errore durante il salvataggio: " + ex.getMessage());
-                    }
-                });
-            annullaButton.addActionListener(e -> dispose());
+                    animaleController.addAnimale(chip, nome, tipo, razza, colore, dataNascita, usernameProprietario);
+                    JOptionPane.showMessageDialog(this, "Animale inserito con successo.");
+                    dispose();
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "Errore durante il salvataggio: " + ex.getMessage());
+                }
+            });
+            pack();
+            setLocationRelativeTo(parente); // centra la finestra
         }
     }
 
@@ -393,10 +388,7 @@ public class ProCMS {
                     JOptionPane.showMessageDialog(this, "Errore durante la prenotazione: " + ex.getMessage());
                 }
             });
-
             annullaButton.addActionListener(e -> dispose());
-
-
     }
 
         private JPanel createAdvancedCalendar() {
@@ -551,71 +543,60 @@ public class ProCMS {
         }
 }
 
-    //
-    private static class modificaProfilo extends JDialog{
+    private static class modificaProfilo extends JDialog {
         public modificaProfilo(JFrame parente, String usernameUtente) throws SQLException, ClassNotFoundException {
             super(parente, "Modifica profilo", true);
 
             UtenteController utenteController = new UtenteController();
-
-            setSize(800, 700);
-            setLocationRelativeTo(parente);
-            setLayout(new BorderLayout());
-
-            // Pannello principale
-            JPanel mainPanel = new JPanel(new BorderLayout());
-            mainPanel.setBackground(new Color(245, 250, 255));
-            mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-
             List<Utente> utenti = utenteController.getUser(usernameUtente);
 
             if (utenti == null || utenti.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Nessun utente trovato con username: " + usernameUtente);
                 return;
             }
-            Utente utente = utenti.get(0);
-            // Campi per la modifica del profilo
-            JPanel formPanel = utilities.createSectionPanel("Modifica Profilo");
 
+            Utente utente = utenti.get(0);
+
+            // Form - simile a N1
+            JPanel formPanel = utilities.createSectionPanel("Modifica Profilo");
             formPanel.setLayout(new GridLayout(0, 2, 10, 10));
 
             formPanel.add(new JLabel("Nome:"));
             JTextField nomeField = new JTextField(utente.getNome());
             formPanel.add(nomeField);
+
             formPanel.add(new JLabel("Cognome:"));
             JTextField cognomeField = new JTextField(utente.getCognome());
             formPanel.add(cognomeField);
+
             formPanel.add(new JLabel("Email:"));
             JTextField emailField = new JTextField(utente.getEmail());
             formPanel.add(emailField);
+
             formPanel.add(new JLabel("Username:"));
             JTextField usernameField = new JTextField(utente.getUsername());
             formPanel.add(usernameField);
+
             formPanel.add(new JLabel("Password:"));
             JPasswordField passwordField = new JPasswordField(utente.getPassword());
             formPanel.add(passwordField);
-            // Pannello dei pulsanti
 
-            JPanel buttonPanel = utilities.createSectionPanel("");
-            buttonPanel.setBackground(new Color(245, 250, 255));
-            JButton salvaButton = utilities.createButton("Salva", utilities.Blue);
+            // Pannello pulsanti separato
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+            JButton modificaButton = utilities.createButton("Modifica", utilities.Orange);
             JButton annullaButton = utilities.createButton("Annulla", utilities.Red);
-
-            buttonPanel.add(salvaButton);
+            buttonPanel.add(modificaButton);
             buttonPanel.add(annullaButton);
-            mainPanel.add(formPanel, BorderLayout.CENTER);
-            mainPanel.add(buttonPanel, BorderLayout.SOUTH);
-            add(mainPanel, BorderLayout.CENTER);
 
+            // Aggiunta dei pannelli al JDialog
+            getContentPane().add(formPanel, BorderLayout.CENTER);
+            getContentPane().add(buttonPanel, BorderLayout.SOUTH);
+
+            // Eventi
             annullaButton.addActionListener(e -> dispose());
-            salvaButton.addActionListener(e -> {
 
+            modificaButton.addActionListener(e -> {
                 try {
-
-                    System.out.println("Nuovo username : " + usernameField.getText() + " Nome: " + nomeField.getText() + " Cognome: " + cognomeField.getText() + " Email: " + emailField.getText() + " Password: " + new String(passwordField.getPassword())
-                            + " Immagine Profilo: " + utente.getImmagineProfilo() + " Username originale: " + usernameUtente);
-
-
                     utenteController.updateUser(
                             usernameField.getText(),
                             nomeField.getText(),
@@ -623,27 +604,313 @@ public class ProCMS {
                             emailField.getText(),
                             new String(passwordField.getPassword()),
                             utente.getImmagineProfilo(),
-                            usernameUtente // Username originale per l'aggiornamento
+                            usernameUtente
                     );
 
                     JOptionPane.showMessageDialog(this, "Profilo aggiornato con successo.");
-                    // ora ricarichiamo la proCMS in modo tale che sia letta con lo username aggiornato
+
+                    // Ricarico la schermata principale con il nuovo username
                     JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
                     frame.setContentPane(new ProCMS(frame, nomeField.getText(), cognomeField.getText(), usernameField.getText()).getProPanel());
                     frame.revalidate();
                     frame.repaint();
                     dispose();
 
+                } catch (SQLException | ClassNotFoundException ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(this, "Errore durante l'aggiornamento del profilo.", "Errore", JOptionPane.ERROR_MESSAGE);
+                }
+            });
 
+            pack();
+            setLocationRelativeTo(parente); // centra la finestra rispetto al padre
+        }
+    }
+
+    private static class visualizzaAnimali extends JDialog {
+        private DefaultTableModel model;
+        private JTable table;
+        private List<Animale> animali;
+        private AnimaleController animaleController;
+        private String usernameProprietario;
+        private JFrame parente;
+
+        public visualizzaAnimali(JFrame parente, String usernameProprietario) throws SQLException, ClassNotFoundException {
+            super(parente, "Visualizza Animali", true);
+            this.parente = parente;
+            this.usernameProprietario = usernameProprietario;
+            this.animaleController = new AnimaleController();
+
+            setSize(800, 600);
+            setLocationRelativeTo(parente);
+
+            // Pannello principale
+            JPanel mainPanel = new JPanel(new BorderLayout());
+            mainPanel.setBackground(new Color(245, 250, 255));
+            mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+            // Pulsante Inserisci Animale
+            JButton inserisciAnimaleButton = utilities.createButton("Inserisci Animale", utilities.Blue);
+            JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+            headerPanel.setBackground(new Color(245, 250, 255));
+            headerPanel.add(inserisciAnimaleButton);
+            mainPanel.add(headerPanel, BorderLayout.NORTH);
+
+            // Inizializza la lista animali e il modello
+            refreshAnimaliList();
+
+            // Colonne della tabella
+            String[] columnNames = {"Chip", "Nome", "Razza", "Tipo", "Data di nascita" ," ", "  "};
+
+            // Modello tabella
+            model = new DefaultTableModel(columnNames, 0) {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return column == 4 || column == 5;
+                }
+            };
+
+            // Riempimento iniziale del modello
+            updateTableModel();
+
+            // Tabella
+            table = new JTable(model);
+            table.setRowHeight(30);
+
+            // Configura renderer e editor per i pulsanti
+            setupButtonColumns();
+
+            // Listener per il pulsante Inserisci Animale
+            inserisciAnimaleButton.addActionListener(e -> {
+                inserisciAnimale dialog = null;
+                try {
+                    dialog = new inserisciAnimale(parente, usernameProprietario);
                 } catch (SQLException ex) {
                     throw new RuntimeException(ex);
                 } catch (ClassNotFoundException ex) {
                     throw new RuntimeException(ex);
                 }
-
+                dialog.addWindowListener(new WindowAdapter() {
+                    @Override
+                    public void windowClosed(WindowEvent e) {
+                        refreshTableData();
+                    }
+                });
+                dialog.setVisible(true);
             });
 
+            // Scroll pane
+            JScrollPane scrollPane = new JScrollPane(table);
+            mainPanel.add(scrollPane, BorderLayout.CENTER);
+            add(mainPanel, BorderLayout.CENTER);
+        }
 
+        private void refreshAnimaliList() throws SQLException, ClassNotFoundException {
+            animali = animaleController.readAnimale(usernameProprietario);
+        }
+
+        private void updateTableModel() {
+            model.setRowCount(0); // Pulisci la tabella
+            for (Animale animale : animali) {
+                model.addRow(new Object[]{
+                        animale.getChip(),
+                        animale.getNome(),
+                        animale.getRazza(),
+                        animale.getTipo(),
+                        animale.getDataNascita(),
+                        "Modifica",
+                        "Cancella"
+                });
+            }
+        }
+
+        private void refreshTableData() {
+            try {
+                refreshAnimaliList();
+                updateTableModel();
+                table.revalidate();
+                table.repaint();
+            } catch (SQLException | ClassNotFoundException ex) {
+                JOptionPane.showMessageDialog(parente,
+                        "Errore durante il caricamento degli animali: " + ex.getMessage(),
+                        "Errore", JOptionPane.ERROR_MESSAGE);}
+        }
+
+        private void setupButtonColumns() {
+            // Renderer per i pulsanti
+            table.getColumn(" ").setCellRenderer(new TableCellRenderer() {
+                @Override
+                public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                                                               boolean hasFocus, int row, int column) {
+                    JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
+                    JButton btnModifica = new JButton("Modifica");
+                    btnModifica.setOpaque(true);
+                    btnModifica.setFocusable(false);
+                    panel.add(btnModifica);
+                    return panel;
+                }
+            });
+
+            table.getColumn("  ").setCellRenderer(new TableCellRenderer() {
+                @Override
+                public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                                                               boolean hasFocus, int row, int column) {
+                    JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
+                    JButton btnCancella = new JButton("Cancella");
+                    btnCancella.setOpaque(true);
+                    btnCancella.setFocusable(false);
+                    panel.add(btnCancella);
+                    return panel;
+                }
+            });
+
+            // Editor per Modifica
+            table.getColumn(" ").setCellEditor(new DefaultCellEditor(new JTextField()) {
+                private JPanel panel;
+                private JButton btnModifica = new JButton("Modifica");
+
+                {
+                    panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
+                    panel.add(btnModifica);
+
+                    btnModifica.addActionListener(e -> {
+                        int row = table.getEditingRow();
+                        Animale animale = animali.get(row);
+
+                        JPanel formPanelAnimal = utilities.createSectionPanel("Modifica Animale");
+
+                        formPanelAnimal.setLayout(new GridLayout(0, 2, 10, 10));
+
+                        formPanelAnimal.add(new JLabel("Chip:"));
+                        JTextField chipField = new JTextField(String.valueOf(animale.getChip()));
+                        formPanelAnimal.add(chipField);
+
+                        formPanelAnimal.add(new JLabel("Nome:"));
+                        JTextField nomeField = new JTextField(animale.getNome());
+                        formPanelAnimal.add(nomeField);
+
+                        formPanelAnimal.add(new JLabel("Tipo:"));
+                        JComboBox<String> tipoCombo = new JComboBox<>(utilities.animalTypes);
+
+                        tipoCombo.setSelectedItem(animale.getTipo());
+                        formPanelAnimal.add(tipoCombo);
+
+                        formPanelAnimal.add(new JLabel("Razza:"));
+                        JTextField razzaField = new JTextField(animale.getRazza());
+                        formPanelAnimal.add(razzaField);
+
+                        formPanelAnimal.add(new JLabel("Colore:"));
+                        JTextField coloreField = new JTextField(animale.getColore());
+                        formPanelAnimal.add(coloreField);
+
+                        formPanelAnimal.add(new JLabel("Data di Nascita (yyyy/MM/gg):"));
+                        JTextField dataNascitaField = new JTextField(new SimpleDateFormat("yyyy/MM/dd").format(animale.getDataNascita()));
+                        formPanelAnimal.add(dataNascitaField);
+
+                        int conferma = JOptionPane.showConfirmDialog(parente, formPanelAnimal,
+                                "Modifica Animale", JOptionPane.OK_CANCEL_OPTION);
+                        if (conferma == JOptionPane.OK_OPTION) {
+                            // Estrai e valida i dati
+                            String chipText = chipField.getText().trim();
+                            String nome = nomeField.getText().trim();
+                            Object selectedItem = tipoCombo.getSelectedItem();
+                            String tipo = (selectedItem != null) ? selectedItem.toString() : "";
+                            String razza = razzaField.getText().trim();
+                            String colore = coloreField.getText().trim();
+                            String dataNascitaText = dataNascitaField.getText().trim();
+
+                            // Controlla campi vuoti
+                            if (chipText.isEmpty() || nome.isEmpty() || tipo.isEmpty() || razza.isEmpty() || colore.isEmpty() || dataNascitaText.isEmpty()) {
+                                JOptionPane.showMessageDialog(parente, "Tutti i campi sono obbligatori.");
+                                return;
+                            }
+
+                            int chip;
+                            try {
+                                chip = Integer.parseInt(chipText);
+                            } catch (NumberFormatException ex) {
+                                JOptionPane.showMessageDialog(parente, "Il chip deve essere un numero intero.");
+                                return;
+                            }
+
+                            Date dataNascita;
+                            try {
+                                SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+                                sdf.setLenient(false);
+                                dataNascita = sdf.parse(dataNascitaText);
+                            } catch (ParseException ex) {
+                                JOptionPane.showMessageDialog(parente, "Formato data non valido. Usa aaaa/MM/gg.");
+                                return;
+                            }
+
+                            // Salvataggio
+                            try {
+                                animaleController.updateAnimale(chip, nome, tipo, razza, colore, dataNascita, animale.getChip());
+                                JOptionPane.showMessageDialog(parente, "Animale modificato con successo.");
+                                refreshTableData();
+                            } catch (Exception ex) {
+                                JOptionPane.showMessageDialog(parente, "Errore durante la modifica: " + ex.getMessage());
+                            }
+                        }
+                    });
+                }
+
+                @Override
+                public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+                    return panel;
+                }
+
+                @Override
+                public Object getCellEditorValue() {
+                    return null;
+                }
+            });
+
+            // Editor per Cancella
+            table.getColumn("  ").setCellEditor(new DefaultCellEditor(new JTextField()) {
+                private JPanel panel;
+                private JButton btnCancella = new JButton("Cancella");
+
+                {
+                    panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
+                    panel.add(btnCancella);
+
+                    btnCancella.addActionListener(e -> {
+                        int row = table.getEditingRow();
+                        Animale animale = animali.get(row);
+
+                        int conferma = JOptionPane.showConfirmDialog(parente,
+                                "Sei sicuro di voler cancellare l'animale \"" + animale.getNome() + "\"?",
+                                "Conferma Cancellazione", JOptionPane.YES_NO_OPTION);
+
+                        if (conferma == JOptionPane.YES_OPTION) {
+                            try {
+                                animaleController.deleteAnimale(animale.getChip());
+                                model.removeRow(row);
+                                animali.remove(row);
+                                JOptionPane.showMessageDialog(parente,
+                                        "Animale \"" + animale.getNome() + "\" cancellato con successo.");
+                            } catch (Exception ex) {
+                                JOptionPane.showMessageDialog(parente,
+                                        "Errore durante la cancellazione: " + ex.getMessage(),
+                                        "Errore", JOptionPane.ERROR_MESSAGE);
+                            }
+                        }
+                        fireEditingStopped();
+                    });
+                }
+
+                @Override
+                public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+                    return panel;
+                }
+
+                @Override
+                public Object getCellEditorValue() {
+                    return null;
+                }
+            });
         }
     }
+
 }
