@@ -47,6 +47,10 @@ public class Animale {
         return usernameUtente;
     }
 
+    public void setChip(int chip) {
+        this.chip = chip;
+    }
+
     @Override
     public String toString() {
         return "Nome : " + nome + " - Chip : " + chip;
@@ -72,6 +76,30 @@ public class Animale {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
             throw e; // Rilancia l'eccezione per gestirla a livello superiore
+        }
+    }
+
+    public void delete(Animale animale) {
+        AnimaleDAO animaleDAO = new AnimaleDAO();
+        try {
+            animaleDAO.delete(animale.getChip());
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Handle exception appropriately
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void update(Animale animale, int oldChip) {
+        AnimaleDAO animaleDAO = new AnimaleDAO();
+        try {
+            animaleDAO.update(animale, oldChip);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Handle exception appropriately
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
         }
     }
 

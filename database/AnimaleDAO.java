@@ -79,8 +79,8 @@ public class AnimaleDAO {
         return animali;
     }
 
-    public void update(Animale animale) throws SQLException, ClassNotFoundException {
-        String query = "UPDATE animale SET nome = ?, tipo = ?, razza = ?, colore = ?, dataNascita = ? WHERE chip = ?";
+    public void update(Animale animale, int oldChip) throws SQLException, ClassNotFoundException {
+        String query = "UPDATE animale SET nome = ?, tipo = ?, razza = ?, colore = ?, dataNascita = ?, chip = ? WHERE chip = ?";
 
         try (Connection conn = DBConnectionManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -90,7 +90,14 @@ public class AnimaleDAO {
             stmt.setString(3, animale.getRazza());
             stmt.setString(4, animale.getColore());
             stmt.setDate(5, new java.sql.Date(animale.getDataNascita().getTime()));
-            stmt.setInt(6, animale.getChip());
+
+            stmt.setInt(6, animale.getChip()); // Imposta il nuovo chip
+            stmt.setInt(7, oldChip); // Imposta il vecchio chip per la condizione WHERE
+
+            int rowsAffected = stmt.executeUpdate();  // <-- esegui e controlla il risultato
+            if (rowsAffected == 0) {
+                throw new SQLException("Nessun animale trovato con chip: " + oldChip);
+            }
 
         }catch (SQLException e) {
             throw new SQLException("Aggiornamento fallito : " + e.getMessage());
@@ -104,9 +111,14 @@ public class AnimaleDAO {
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setInt(1, chip);
+            int rowsAffected = stmt.executeUpdate();  // <-- esegui e controlla il risultato
 
-        }catch (SQLException e) {
-            throw new SQLException("Cancellazione fallita : " + e.getMessage());
+            if (rowsAffected == 0) {
+                throw new SQLException("Nessun animale trovato con chip: " + chip);
+            }
+
+        } catch (SQLException e) {
+            throw new SQLException("Cancellazione fallita: " + e.getMessage());
         }
     }
 }

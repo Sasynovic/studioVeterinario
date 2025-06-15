@@ -17,4 +17,16 @@ public class AnimaleController {
         Animale animale = new Animale();
         return animale.getAllAnimali(usernameProprietario);
     }
+
+    public void deleteAnimale(int chip){
+        Animale animale = new Animale();
+        animale.setChip(chip);
+
+        animale.delete(animale);
+    }
+
+    public void updateAnimale(int chip, String nome, String tipo, String razza, String colore, Date dataNascita, int oldChip) throws SQLException, ClassNotFoundException {
+        Animale animale = new Animale(chip, nome, tipo, razza, colore, dataNascita, null);
+        animale.update(animale, oldChip);
+    }
 }
