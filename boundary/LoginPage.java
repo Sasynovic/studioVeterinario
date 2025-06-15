@@ -87,9 +87,9 @@ public class LoginPage {
 
                         switch (tipo) {
                             case 1: // Amministratore
-//                                frame.setContentPane(new AdminCMS(frame).getAdminPanel());
-//                                frame.revalidate();
-//                                frame.repaint();
+                                frame.setContentPane(new AdminCMS(frame).getAdminPanel());
+                                frame.revalidate();
+                                frame.repaint();
                                 break;
                             case 2: // Veterinario
 //                                frame.setContentPane(new VetCMS(frame).getVetPanel());
