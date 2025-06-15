@@ -255,10 +255,10 @@ public class RegisterPage {
                 try {
                    new UtenteController().addUser(
                             getUsername(),
-                            getPassword(),
                             getNome(),
                             getCognome(),
                             getEmail(),
+                            getPassword(),
                             getImmagineProfiloPath()
                     );
 
