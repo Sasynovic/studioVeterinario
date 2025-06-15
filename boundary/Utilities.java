@@ -12,6 +12,22 @@ public class Utilities {
     public final Color DarkGray = new Color(169, 169, 169);
     public final Color Orange = new Color(255, 165, 0);
 
+    public final String[] animalTypes = {
+            "Cane",
+            "Gatto",
+            "Coniglio",
+            "Criceto",
+            "Uccello",
+            "Pesce",
+            "Tartaruga",
+            "Furetto",
+            "Porcellino d'India",
+            "Ratto",
+            "Serpente",
+            "Cavallo",
+            "Altro"
+    };
+
     public Utilities() {
     }
 
@@ -33,6 +49,8 @@ public class Utilities {
     public void showErrorMessage(JPanel panel,String message) {
         JOptionPane.showMessageDialog(panel, message, "Errore", JOptionPane.ERROR_MESSAGE);
     }
+
+
 
     public JPanel createSectionPanel(String title) {
         JPanel panel = new JPanel();
