@@ -6,7 +6,6 @@ import java.util.List;
 
 import entity.Utente;
 import controller.LoginResult;
-import entity.Proprietario;
 
 public class UtenteDAO {
 
@@ -75,7 +74,7 @@ public class UtenteDAO {
         }
     }
 
-    public List<Proprietario> read(String username) throws SQLException, ClassNotFoundException {
+    public List<Utente> read(String username) throws SQLException, ClassNotFoundException {
         String query = "SELECT username, nome, cognome, email, password, immagineProfilo FROM utente";
         if (username != null && !username.trim().isEmpty()) {
             query += " WHERE username = ?";
@@ -88,8 +87,8 @@ public class UtenteDAO {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    List<Proprietario> proprietari = new ArrayList<>();
-                    Proprietario proprietario = new Proprietario();
+                    List<Utente> proprietari = new ArrayList<>();
+                    Utente proprietario = new Utente();
 
                     proprietario.setUsername(rs.getString("username"));
                     proprietario.setNome(rs.getString("nome"));
@@ -107,7 +106,7 @@ public class UtenteDAO {
         }
     }
 
-    public void update(Utente utente, String username) throws SQLException, ClassNotFoundException {
+    public void update(Utente utente, String usernameOld) throws SQLException, ClassNotFoundException {
         // Lista per costruire dinamicamente la query
         List<String> setClauses = new ArrayList<>();
         List<Object> parameters = new ArrayList<>();
@@ -139,7 +138,7 @@ public class UtenteDAO {
 
         // Costruisci la query dinamicamente
         String query = "UPDATE utente SET " + String.join(", ", setClauses) + " WHERE username = ?";
-        parameters.add(username); // parametro per la WHERE clause
+        parameters.add(usernameOld); // parametro per la WHERE clause
 
         try (
                 Connection conn = DBConnectionManager.getConnection();

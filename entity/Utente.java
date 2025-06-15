@@ -4,6 +4,7 @@ import controller.LoginResult;
 import database.UtenteDAO;
 
 import java.sql.SQLException;
+import java.util.List;
 
 
 public class Utente {
@@ -67,6 +68,23 @@ public class Utente {
         try{
             utenteDAO.create(utente);
         }catch (SQLException e) {
+            e.printStackTrace();
+            throw e; // Rilancia l'eccezione per gestirla a livello superiore
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            throw e; // Rilancia l'eccezione per gestirla a livello superiore
+        }
+    }
+
+    public List<Utente> getUtenti(String username) throws SQLException, ClassNotFoundException {
+        UtenteDAO utenteDAO = new UtenteDAO();
+        return utenteDAO.read(username);
+    }
+    public void updateUtente(Utente utente, String useranmeOld) throws SQLException, ClassNotFoundException {
+        UtenteDAO utenteDAO = new UtenteDAO();
+        try {
+            utenteDAO.update(utente,useranmeOld);
+        } catch (SQLException e) {
             e.printStackTrace();
             throw e; // Rilancia l'eccezione per gestirla a livello superiore
         } catch (ClassNotFoundException e) {

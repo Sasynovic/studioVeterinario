@@ -17,8 +17,10 @@ import controller.AnimaleController;
 import controller.PrenotazioneController;
 
 // entity importare per crare delle List di lettura, seconod quanto detto da Marco Ariano andrebbero riportati dei DTO
+import controller.UtenteController;
 import entity.Animale;
 import entity.Prenotazione;
+import entity.Utente;
 
 
 public class ProCMS {
@@ -110,6 +112,14 @@ public class ProCMS {
                 utilities.showErrorMessage(proPanel,"Errore durante la prenotazione: " + ex.getMessage());
             }
         });
+
+        modificaProfiloButton.addActionListener(e -> {
+            try{
+                new modificaProfilo(frame, username).setVisible(true);
+            } catch (SQLException | ClassNotFoundException ex) {
+                utilities.showErrorMessage(proPanel,"Errore durante la modifica del profilo: " + ex.getMessage());
+            }
+        });
     }
 
     // Dialog per inserire un animale
@@ -167,8 +177,8 @@ public class ProCMS {
             add(mainPanel, BorderLayout.CENTER);
             // Pannello dei pulsanti
 
-            JButton salvaButton = utilities.createButton(("Salva"), new Color(70, 130, 180));
-            JButton annullaButton = utilities.createButton(("Anulla"), new Color(159, 0, 0));
+            JButton salvaButton = utilities.createButton(("Salva"), utilities.Blue);
+            JButton annullaButton = utilities.createButton(("Anulla"), utilities.Red);
 
             mainPanel.add(annullaButton);
             mainPanel.add(salvaButton);
@@ -377,7 +387,6 @@ public class ProCMS {
 
                 try {
                     prenotazioneController.updatePrenotazione(dataSelezionata, orarioSelezionato, animaleSelected.getChip(), 1);
-                    System.out.println(dataSelezionata + " " + orarioSelezionato + " " + animaleSelected.getChip() + " 1");
                     JOptionPane.showMessageDialog(this, "Prenotazione effettuata con successo.");
                     dispose();
                 } catch (Exception ex) {
@@ -541,4 +550,100 @@ public class ProCMS {
             }
         }
 }
+
+    //
+    private static class modificaProfilo extends JDialog{
+        public modificaProfilo(JFrame parente, String usernameUtente) throws SQLException, ClassNotFoundException {
+            super(parente, "Modifica profilo", true);
+
+            UtenteController utenteController = new UtenteController();
+
+            setSize(800, 700);
+            setLocationRelativeTo(parente);
+            setLayout(new BorderLayout());
+
+            // Pannello principale
+            JPanel mainPanel = new JPanel(new BorderLayout());
+            mainPanel.setBackground(new Color(245, 250, 255));
+            mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+            List<Utente> utenti = utenteController.getUser(usernameUtente);
+
+            if (utenti == null || utenti.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Nessun utente trovato con username: " + usernameUtente);
+                return;
+            }
+            Utente utente = utenti.get(0);
+            // Campi per la modifica del profilo
+            JPanel formPanel = utilities.createSectionPanel("Modifica Profilo");
+
+            formPanel.setLayout(new GridLayout(0, 2, 10, 10));
+
+            formPanel.add(new JLabel("Nome:"));
+            JTextField nomeField = new JTextField(utente.getNome());
+            formPanel.add(nomeField);
+            formPanel.add(new JLabel("Cognome:"));
+            JTextField cognomeField = new JTextField(utente.getCognome());
+            formPanel.add(cognomeField);
+            formPanel.add(new JLabel("Email:"));
+            JTextField emailField = new JTextField(utente.getEmail());
+            formPanel.add(emailField);
+            formPanel.add(new JLabel("Username:"));
+            JTextField usernameField = new JTextField(utente.getUsername());
+            formPanel.add(usernameField);
+            formPanel.add(new JLabel("Password:"));
+            JPasswordField passwordField = new JPasswordField(utente.getPassword());
+            formPanel.add(passwordField);
+            // Pannello dei pulsanti
+
+            JPanel buttonPanel = utilities.createSectionPanel("");
+            buttonPanel.setBackground(new Color(245, 250, 255));
+            JButton salvaButton = utilities.createButton("Salva", utilities.Blue);
+            JButton annullaButton = utilities.createButton("Annulla", utilities.Red);
+
+            buttonPanel.add(salvaButton);
+            buttonPanel.add(annullaButton);
+            mainPanel.add(formPanel, BorderLayout.CENTER);
+            mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+            add(mainPanel, BorderLayout.CENTER);
+
+            annullaButton.addActionListener(e -> dispose());
+            salvaButton.addActionListener(e -> {
+
+                try {
+
+                    System.out.println("Nuovo username : " + usernameField.getText() + " Nome: " + nomeField.getText() + " Cognome: " + cognomeField.getText() + " Email: " + emailField.getText() + " Password: " + new String(passwordField.getPassword())
+                            + " Immagine Profilo: " + utente.getImmagineProfilo() + " Username originale: " + usernameUtente);
+
+
+                    utenteController.updateUser(
+                            usernameField.getText(),
+                            nomeField.getText(),
+                            cognomeField.getText(),
+                            emailField.getText(),
+                            new String(passwordField.getPassword()),
+                            utente.getImmagineProfilo(),
+                            usernameUtente // Username originale per l'aggiornamento
+                    );
+
+                    JOptionPane.showMessageDialog(this, "Profilo aggiornato con successo.");
+                    // ora ricarichiamo la proCMS in modo tale che sia letta con lo username aggiornato
+                    JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
+                    frame.setContentPane(new ProCMS(frame, nomeField.getText(), cognomeField.getText(), usernameField.getText()).getProPanel());
+                    frame.revalidate();
+                    frame.repaint();
+                    dispose();
+
+
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                } catch (ClassNotFoundException ex) {
+                    throw new RuntimeException(ex);
+                }
+
+            });
+
+
+        }
+    }
 }
