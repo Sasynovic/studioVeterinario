@@ -7,6 +7,14 @@ import java.util.List;
 
 public class PrenotazioneController {
 
+    public void inserisciDisponibilita(Date data, int orario, int idStato) {
+        Prenotazione prenotazione = new Prenotazione();
+            prenotazione.setData(data);
+            prenotazione.setOrario(orario);
+            prenotazione.setIdStato(idStato);
+        prenotazione.inserisciPrenotazioneAdmin(prenotazione);
+    }
+
     public void updatePrenotazione(Date data, int orario, int chipAnimale, int idStato){
         Prenotazione prenotazione = new Prenotazione();
         prenotazione.setData(data);
@@ -19,5 +27,10 @@ public class PrenotazioneController {
     public List<Prenotazione> readPrenotazione(Date data, int stato) {
         Prenotazione prenotazione = new Prenotazione();
         return prenotazione.getAllPrenotazioni(data, stato);
+    }
+
+    public List<PrenotationResult> getPrenotazioniDay(Date data) {
+        Prenotazione prenotazione = new Prenotazione();
+        return prenotazione.getPrenotazioneByDate(data);
     }
 }
