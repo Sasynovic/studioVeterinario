@@ -3,6 +3,7 @@ package entity;
 import java.util.Date;
 import java.util.List;
 
+import controller.PrenotationResult;
 import database.PrenotazioneDAO;
 
 
@@ -72,12 +73,42 @@ public class Prenotazione {
         }
     }
 
+    public void inserisciPrenotazioneAdmin(Prenotazione p){
+        PrenotazioneDAO prenotazioneDAO = new PrenotazioneDAO();
+        try{
+            prenotazioneDAO.create(p);
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public void inserisciPrenotazioneUtente(Prenotazione p){
         PrenotazioneDAO prenotazioneDAO = new PrenotazioneDAO();
         try{
             prenotazioneDAO.update(p);
         }catch(Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public List<PrenotationResult> getPrenotazioneByDate(Date data) {
+        PrenotazioneDAO prenotazioneDAO = new PrenotazioneDAO();
+        try {
+            // Conversione sicura da java.util.Date a java.sql.Date
+            java.sql.Date sqlDate = null;
+            if (data != null) {
+                // Se la data è già un java.sql.Date, usala direttamente
+                if (data instanceof java.sql.Date) {
+                    sqlDate = (java.sql.Date) data;
+                } else {
+                    // Altrimenti converti da java.util.Date
+                    sqlDate = new java.sql.Date(data.getTime());
+                }
+            }
+            return prenotazioneDAO.readPrenotazioniToday(sqlDate);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
 
