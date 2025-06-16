@@ -1,49 +1,112 @@
 package entity;
 
-import java.time.LocalDate;
+import database.AgendaDAO;
+import database.PrenotazioneDAO;
+
 import java.util.Date;
 import java.util.List;
 
 public class Agenda {
 
-    //Visita
-    private int idVisita;
-    private String tipoVisita;
-    private String descrizione;
-    private double costo;
+    public Date data;
+    public int orario;
 
-    private String nomeVeterinario;
-    private String cognomeVeterinario;
+    public String nomeStato;
 
-    //Prenotazione
-    private Date dataPrenotazione;
-    private int orarioPrenotazione;
-    private String nomeStato;
-    private int chipAnimale;
+    public int chipAnimale;
+    public String nomeAnimale;
 
-    //Proprietario
-    private String nomeAnimale;
-    private String nomeProprietario;
+    public String nomeProprietario;
 
-    public Agenda(String tipoVisita, String descrizione, double costo, String chipAnimale,
-                  String nomeVeterinario, String cognomeVeterinario, String nomeAnimale,
-                  String nomeProprietario, int idVisita, Date dataPrenotazione, int orarioPrenotazione,
-                  String nomeStato) {
-        this.tipoVisita = tipoVisita;
-        this.descrizione = descrizione;
-        this.costo = costo;
-        this.chipAnimale = Integer.parseInt(chipAnimale);
-        this.nomeVeterinario = nomeVeterinario;
-        this.cognomeVeterinario = cognomeVeterinario;
+    public Agenda() {}
+
+    public Agenda(Date data, int orario, String nomeStato, int chipAnimale, String nomeAnimale, String nomeProprietario) {
+        this.data = data;
+        this.orario = orario;
+        this.nomeStato = nomeStato;
+        this.chipAnimale = chipAnimale;
         this.nomeAnimale = nomeAnimale;
         this.nomeProprietario = nomeProprietario;
-        this.idVisita = idVisita;
-        this.dataPrenotazione = dataPrenotazione;
-        this.orarioPrenotazione = orarioPrenotazione;
-        this.nomeStato = nomeStato;
     }
-//
-//    public List<Agenda> visualizzaAgenda() {
-////        return Prenotazione.visualizzaAgenda(this.nomeProprietario);
-//    }
+
+    public Date getData() {return data;}
+    public int getOrario() {
+        return orario;
+    }
+    public String getNomeStato() {
+        return nomeStato;
+    }
+    public int getChipAnimale() {
+        return chipAnimale;
+    }
+    public String getNomeAnimale() {
+        return nomeAnimale;
+    }
+    public String getNomeProprietario() {
+        return nomeProprietario;
+    }
+
+
+    public List<Agenda> getPrenotazioneByDate(Date data) {
+        AgendaDAO agendaDAO = new AgendaDAO();
+        try {
+            // Conversione sicura da java.util.Date a java.sql.Date
+            java.sql.Date sqlDate = null;
+            if (data != null) {
+                // Se la data è già un java.sql.Date, usala direttamente
+                if (data instanceof java.sql.Date) {
+                    sqlDate = (java.sql.Date) data;
+                } else {
+                    // Altrimenti converti da java.util.Date
+                    sqlDate = new java.sql.Date(data.getTime());
+                }
+            }
+            return agendaDAO.readPrenotazioniToday(sqlDate);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public List<Agenda> getVisiteByDate(Date data) {
+        AgendaDAO agendaDAO = new AgendaDAO();
+        try {
+            // Conversione sicura da java.util.Date a java.sql.Date
+            java.sql.Date sqlDate = null;
+            if (data != null) {
+                // Se la data è già un java.sql.Date, usala direttamente
+                if (data instanceof java.sql.Date) {
+                    sqlDate = (java.sql.Date) data;
+                } else {
+                    // Altrimenti converti da java.util.Date
+                    sqlDate = new java.sql.Date(data.getTime());
+                }
+            }
+            return agendaDAO.readVisiteToday(sqlDate);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public List<Agenda> getVaccinazioniYear(Date data) {
+        AgendaDAO agendaDAO = new AgendaDAO();
+        try {
+            // Conversione sicura da java.util.Date a java.sql.Date
+            java.sql.Date sqlDate = null;
+            if (data != null) {
+                // Se la data è già un java.sql.Date, usala direttamente
+                if (data instanceof java.sql.Date) {
+                    sqlDate = (java.sql.Date) data;
+                } else {
+                    // Altrimenti converti da java.util.Date
+                    sqlDate = new java.sql.Date(data.getTime());
+                }
+            }
+            return agendaDAO.readVaccinazioniYear(sqlDate);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }
