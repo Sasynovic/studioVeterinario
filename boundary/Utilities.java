@@ -28,6 +28,12 @@ public class Utilities {
             "Altro"
     };
 
+    public final String[] visitType = {
+            "Vaccinazione",
+            "Controllo",
+            "Intervento chirurgico"
+    };
+
     public Utilities() {
     }
 
