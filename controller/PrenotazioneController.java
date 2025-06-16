@@ -26,7 +26,7 @@ public class PrenotazioneController {
 
     public List<Prenotazione> readPrenotazione(Date data, int stato) {
         Prenotazione prenotazione = new Prenotazione();
-        return prenotazione.getAllPrenotazioni(data, stato);
+        return prenotazione.ricercaPrenotazioniDisponibili(data, stato);
     }
 
     public List<PrenotationResult> getPrenotazioniDay(Date data) {

@@ -309,7 +309,6 @@ public class ProCMS {
                 }
             });
 
-
             // Bottoni
             gbc.gridy = 2; gbc.gridx = 0;
             JButton cercaButton = utilities.createButton("Cerca Prenotazioni", new Color(70, 130, 180));
@@ -339,23 +338,25 @@ public class ProCMS {
 
                     if (prenotazioni == null || prenotazioni.isEmpty()) {
                         JOptionPane.showMessageDialog(this, "Nessuna prenotazione disponibile per la data selezionata.");
+                        animaleCombo.removeAllItems();
                     } else {
                         for (Prenotazione p : prenotazioni) {
                             prenotazioneCombo.addItem(p);
                         }
+                        List<Animale> animali = animaleController.readAnimale(usernameProprietario);
+                        animaleCombo.removeAllItems();
+
+                        if (animali == null || animali.isEmpty()) {
+                            JOptionPane.showMessageDialog(this, "Nessun animale trovato per l'utente.");
+                        } else {
+                            for (Animale a : animali) {
+                                animaleCombo.addItem(a);
+                            }
+                        }
                         JOptionPane.showMessageDialog(this, "Trovate " + prenotazioni.size() + " prenotazioni disponibili.");
                     }
 
-                    List<Animale> animali = animaleController.readAnimale(usernameProprietario);
-                    animaleCombo.removeAllItems();
 
-                    if (animali == null || animali.isEmpty()) {
-                        JOptionPane.showMessageDialog(this, "Nessun animale trovato per l'utente.");
-                    } else {
-                        for (Animale a : animali) {
-                            animaleCombo.addItem(a);
-                        }
-                    }
 
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(this, "Errore durante la ricerca: " + ex.getMessage());
@@ -443,6 +444,8 @@ public class ProCMS {
                         for (int x = 0; x < 6; x++) {
                             for (int y = 0; y < 7; y++) {
                                 giorniButtoms[x][y].setBackground(Color.WHITE);
+                                giorniButtoms[x][y].setForeground(Color.BLACK); // ← Aggiungi questa riga
+
                             }
                         }
 

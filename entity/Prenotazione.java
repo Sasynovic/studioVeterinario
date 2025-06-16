@@ -52,7 +52,7 @@ public class Prenotazione {
         this.idVisita = idVisita;
     }
 
-    public List<Prenotazione> getAllPrenotazioni(Date data, int stato) {
+    public List<Prenotazione> ricercaPrenotazioniDisponibili(Date data, int stato) {
         PrenotazioneDAO prenotazioneDAO = new PrenotazioneDAO();
         try {
             // Conversione sicura da java.util.Date a java.sql.Date
