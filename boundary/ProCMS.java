@@ -746,9 +746,7 @@ public class ProCMS {
                 public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
                                                                boolean hasFocus, int row, int column) {
                     JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
-                    JButton btnModifica = new JButton("Modifica");
-                    btnModifica.setOpaque(true);
-                    btnModifica.setFocusable(false);
+                    JButton btnModifica = utilities.createButton("Modifica", utilities.Orange);
                     panel.add(btnModifica);
                     return panel;
                 }
@@ -759,10 +757,29 @@ public class ProCMS {
                 public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
                                                                boolean hasFocus, int row, int column) {
                     JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
-                    JButton btnCancella = new JButton("Cancella");
-                    btnCancella.setOpaque(true);
-                    btnCancella.setFocusable(false);
+                    JButton btnCancella = utilities.createButton("Cancella", utilities.Red);
                     panel.add(btnCancella);
+
+                    btnCancella.addActionListener(e -> {
+                        Animale animale = animali.get(row);
+                        int conferma = JOptionPane.showConfirmDialog(parente,
+                                "Sei sicuro di voler cancellare l'animale \"" + animale.getNome() + "\"?",
+                                "Conferma Cancellazione", JOptionPane.YES_NO_OPTION);
+
+                        if (conferma == JOptionPane.YES_OPTION) {
+                            try {
+                                animaleController.deleteAnimale(animale.getChip());
+                                model.removeRow(row);
+                                animali.remove(row);
+                                JOptionPane.showMessageDialog(parente,
+                                        "Animale \"" + animale.getNome() + "\" cancellato con successo.");
+                            } catch (Exception ex) {
+                                JOptionPane.showMessageDialog(parente,
+                                        "Errore durante la cancellazione: " + ex.getMessage(),
+                                        "Errore", JOptionPane.ERROR_MESSAGE);
+                            }
+                        }
+                    });
                     return panel;
                 }
             });
@@ -770,7 +787,7 @@ public class ProCMS {
             // Editor per Modifica
             table.getColumn(" ").setCellEditor(new DefaultCellEditor(new JTextField()) {
                 private JPanel panel;
-                private JButton btnModifica = new JButton("Modifica");
+                private JButton btnModifica = utilities.createButton("Modifica", utilities.Orange);
 
                 {
                     panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
