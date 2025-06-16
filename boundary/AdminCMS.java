@@ -23,7 +23,12 @@ public class AdminCMS {
     private JButton logoutButton;
     private JLabel titleLabel;
 
-    private static Utilities utilities = new Utilities();
+    protected static Utilities utilities = new Utilities();
+
+    private static String formatDataItaliana() {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy", Locale.ITALIAN);
+        return sdf.format(new Date());
+    }
 
     public AdminCMS(JFrame frame) {
         initializeMainPanel();
@@ -92,11 +97,11 @@ public class AdminCMS {
         });
 
         elencoVisiteGiornaliereButton.addActionListener(e -> {
-            new MostraPrenotazioniDialog(frame).setVisible(true);
+            new mostraPrenotazioniDialog(frame).setVisible(true);
         });
 
         visualizzaAnimaliUltimaVaccinazioneButton.addActionListener(e -> {
-//            new VisualizzaUltimaVaccinazioneDialog(frame).setVisible(true);
+            new visualizzaUltimaVaccinazioneDialog(frame).setVisible(true);
         });
 
         inserisciDisponibilitaButton.addActionListener(e -> {
@@ -104,8 +109,8 @@ public class AdminCMS {
         });
     }
 
-    private static class MostraPrenotazioniDialog extends JDialog {
-        public MostraPrenotazioniDialog(JFrame parente) {
+    private static class mostraPrenotazioniDialog extends JDialog {
+        public mostraPrenotazioniDialog(JFrame parente) {
             // super() DEVE essere la prima istruzione
             super(parente, "Prenotazioni del giorno " + formatDataItaliana(), true);
 
@@ -163,12 +168,68 @@ public class AdminCMS {
             setLocationRelativeTo(parente);
         }
 
-        // Metodo helper per formattare la data
-        private static String formatDataItaliana() {
-            SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy", Locale.ITALIAN);
-            return sdf.format(new Date());
-        }
+
     }
+    private static class visualizzaUltimaVaccinazioneDialog extends JDialog {
+        public visualizzaUltimaVaccinazioneDialog(JFrame parente){
+            super(parente, "Vaccinazioni distanti almeno un anno da : " + formatDataItaliana(), true);
+
+            Date oggi = new Date();
+
+            // Titolo e pannello principale
+            JPanel contentPanel = utilities.createSectionPanel("Vaccinazioni distanti almeno un anno da oggi");
+            contentPanel.setLayout(new BorderLayout());
+
+            // Recupera le prenotazioni del giorno
+            List<PrenotationResult> pDay;
+            try {
+                PrenotazioneController pc = new PrenotazioneController();
+                pDay = pc.getVaccinazioniYear(oggi);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Errore durante il caricamento delle prenotazioni: " + ex.getMessage());
+                dispose();
+                return;
+            }
+
+            // Tabella o lista
+            String[] colonne = {"Data", "Orario", "ChipAnimale", "Animale", "Proprietario"};
+            DefaultTableModel model = new DefaultTableModel(colonne, 0);
+
+            for (PrenotationResult p : pDay) {
+                int orarioInt = p.getOrario();
+                String orarioFormattato = String.format("%02d:00", orarioInt);
+
+                model.addRow(new Object[]{
+                        p.getData(),
+                        orarioFormattato,
+                        p.getChipAnimale(),
+                        p.getNomeAnimale(),
+                        p.getNomeProprietario()
+                });
+            }
+
+            JTable tabella = new JTable(model);
+            tabella.setEnabled(false); // sola lettura
+            JScrollPane scrollPane = new JScrollPane(tabella);
+            contentPanel.add(scrollPane, BorderLayout.CENTER);
+
+            // Pannello pulsante chiudi
+            JButton chiudiButton = utilities.createButton("Chiudi", utilities.Red);
+            chiudiButton.addActionListener(e -> dispose());
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+            buttonPanel.add(chiudiButton);
+
+            // Layout complessivo
+            getContentPane().setLayout(new BorderLayout());
+            getContentPane().add(contentPanel, BorderLayout.CENTER);
+            getContentPane().add(buttonPanel, BorderLayout.SOUTH);
+
+            pack();
+            setLocationRelativeTo(parente);
+        }
+
+        }
+
     private static class InserisciDisponibilitaDialog extends JDialog {
         private JTextField dataField;
         private JComboBox<String> orarioCombo; // Dichiarata come campo della classe
@@ -280,4 +341,7 @@ public class AdminCMS {
                 return null;
             }
         }
-    }}
+    }
+}
+
+// Metodo helper per formattare la data

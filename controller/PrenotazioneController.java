@@ -33,4 +33,12 @@ public class PrenotazioneController {
         Prenotazione prenotazione = new Prenotazione();
         return prenotazione.getPrenotazioneByDate(data);
     }
+
+    public List<PrenotationResult> getVaccinazioniYear(Date data) {
+        // spostiamo la data ad un anno fa
+        long oneYearAgo = data.getTime() - (365L * 24 * 60 * 60 * 1000); // 365 giorni in millisecondi
+        Date oneYearAgoDate = new Date(oneYearAgo);
+        Prenotazione prenotazione = new Prenotazione();
+        return prenotazione.getVaccinazioniYear(oneYearAgoDate);
+    }
 }

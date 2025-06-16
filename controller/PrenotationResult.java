@@ -23,6 +23,7 @@ public class PrenotationResult {
         this.nomeProprietario = nomeProprietario;
     }
 
+    public Date getData() {return data;}
     public int getOrario() {
         return orario;
     }
