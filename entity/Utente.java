@@ -1,6 +1,6 @@
 package entity;
 
-import controller.LoginResult;
+import dto.LoginDTO;
 import database.UtenteDAO;
 
 import java.sql.SQLException;
@@ -46,13 +46,9 @@ public class Utente {
     public String getImmagineProfilo() {return immagineProfilo;}
     public void setImmagineProfilo(String immagineProfilo) {this.immagineProfilo = immagineProfilo; }
 
-    public int getTipoUtente() {return tipoUtente;}
-    public void setTipoUtente(int tipoUtente) {this.tipoUtente = tipoUtente;}
-
-
-    public LoginResult loginUtente(String username, String password) throws SQLException, ClassNotFoundException {
+    public LoginDTO loginUtente(String username, String password) throws SQLException, ClassNotFoundException {
         UtenteDAO utenteDao = new UtenteDAO();
-        LoginResult result = utenteDao.login(username, password);
+        LoginDTO result = utenteDao.login(username, password);
 
         if (result.isSuccess()) {
             this.username = result.getUsername();

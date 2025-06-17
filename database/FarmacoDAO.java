@@ -1,6 +1,5 @@
 package database;
 
-import entity.Agenda;
 import entity.Farmaco;
 
 import java.sql.*;

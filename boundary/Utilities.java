@@ -64,8 +64,6 @@ public class Utilities {
         JOptionPane.showMessageDialog(panel, message, "Errore", JOptionPane.ERROR_MESSAGE);
     }
 
-
-
     public JPanel createSectionPanel(String title) {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
@@ -158,11 +156,6 @@ public class Utilities {
         panel.add(giorniPanel, BorderLayout.CENTER);
 
         return panel;
-    }
-
-    // Versione originale (per compatibilità)
-    public static JPanel createAdvancedCalendar(JLabel dateLabel) {
-        return createAdvancedCalendar(dateLabel, selectedDate -> {});
     }
 
     private static JButton createCalendarNavButton(String text) {

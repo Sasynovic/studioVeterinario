@@ -1,6 +1,6 @@
-package controller;
+package dto;
 
-public class LoginResult {
+public class LoginDTO {
     private boolean success;
     private int tipoUtente;
     private String message;
@@ -9,7 +9,7 @@ public class LoginResult {
     private String username;
     private String immagineProfilo;
 
-    public LoginResult(boolean success, int tipoUtente, String message, String nome, String cognome, String username, String immagineProfilo) {
+    public LoginDTO(boolean success, int tipoUtente, String message, String nome, String cognome, String username, String immagineProfilo) {
         this.success = success;
         this.tipoUtente = tipoUtente;
         this.message = message;

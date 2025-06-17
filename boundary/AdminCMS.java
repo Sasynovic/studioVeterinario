@@ -96,11 +96,11 @@ public class AdminCMS {
         });
 
         elencoVisiteGiornaliereButton.addActionListener(e -> {
-            new mostraPrenotazioniDialog(frame).setVisible(true);
+            new MostraVisiteDialog(frame).setVisible(true);
         });
 
         visualizzaAnimaliUltimaVaccinazioneButton.addActionListener(e -> {
-            new visualizzaUltimaVaccinazioneDialog(frame).setVisible(true);
+            new VisualizzaUltimaVaccinazioneDialog(frame).setVisible(true);
         });
 
         inserisciDisponibilitaButton.addActionListener(e -> {
@@ -108,8 +108,8 @@ public class AdminCMS {
         });
     }
 
-    private static class mostraPrenotazioniDialog extends JDialog {
-        public mostraPrenotazioniDialog(JFrame parente) {
+    private static class MostraVisiteDialog extends JDialog {
+        public MostraVisiteDialog(JFrame parente) {
             // super() DEVE essere la prima istruzione
             super(parente, "Visite del giorno " + formatDataItaliana(), true);
 
@@ -169,8 +169,8 @@ public class AdminCMS {
 
 
     }
-    private static class visualizzaUltimaVaccinazioneDialog extends JDialog {
-        public visualizzaUltimaVaccinazioneDialog(JFrame parente){
+    private static class VisualizzaUltimaVaccinazioneDialog extends JDialog {
+        public VisualizzaUltimaVaccinazioneDialog(JFrame parente){
             super(parente, "Vaccinazioni distanti almeno un anno da : " + formatDataItaliana(), true);
 
             Date oggi = new Date();
@@ -228,7 +228,6 @@ public class AdminCMS {
         }
 
         }
-
     private static class InserisciDisponibilitaDialog extends JDialog {
         private Date dataSelezionata;
         private JLabel dataSelezionataLabel;

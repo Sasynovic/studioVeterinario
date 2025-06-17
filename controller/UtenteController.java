@@ -1,5 +1,6 @@
 package controller;
 
+import dto.LoginDTO;
 import entity.Utente;
 
 import java.sql.SQLException;
@@ -7,7 +8,7 @@ import java.util.List;
 
 public class UtenteController {
 
-    public LoginResult login(String username, String password) throws SQLException, ClassNotFoundException {
+    public LoginDTO login(String username, String password) throws SQLException, ClassNotFoundException {
         Utente utente = new Utente();
         return utente.loginUtente(username, password);
     }

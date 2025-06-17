@@ -102,16 +102,16 @@ public class VetCMS {
         });
 
         elencoPrenotazioniGiornaliereButton.addActionListener(e -> {
-            new mostraPrenotazioniDialog(frame).setVisible(true);
+            new MostraPrenotazioniDialog(frame).setVisible(true);
         });
 
         registraVisitaButton.addActionListener(e -> {
-            new registraVisita(frame, usernameVet).setVisible(true);
+            new RegistraVisita(frame, usernameVet).setVisible(true);
         });
     }
 
-    private static class mostraPrenotazioniDialog extends JDialog {
-        public mostraPrenotazioniDialog(JFrame parente) {
+    private static class MostraPrenotazioniDialog extends JDialog {
+        public MostraPrenotazioniDialog(JFrame parente) {
             // super() DEVE essere la prima istruzione
             super(parente, "Prenotazioni del giorno " + formatDataItaliana(), true);
 
@@ -172,13 +172,13 @@ public class VetCMS {
 
     }
 
-    private static class registraVisita extends JDialog {
+    private static class RegistraVisita extends JDialog {
         private List<Integer> farmaciSelezionati = new ArrayList<>();
         private DefaultListModel<String> farmaciSelezionatiModel = new DefaultListModel<>();
         private FarmacoController farmacoController = new FarmacoController();
         private String usernameVet; // Aggiunto campo per username veterinario
 
-        public registraVisita(JFrame parente, String usernameVet) {
+        public RegistraVisita(JFrame parente, String usernameVet) {
             super(parente, "Registra Visita", true);
             this.usernameVet = usernameVet;
 

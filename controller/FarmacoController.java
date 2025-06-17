@@ -17,7 +17,6 @@ public class FarmacoController {
         Farmaco farmaco = new Farmaco();
         return farmaco.getFarmaci();
     }
-
     public void impiegaFarmaco(int idFarmaco, int idVisita){
         Farmaco farmaco = new Farmaco();
         farmaco.impiega(idFarmaco, idVisita);

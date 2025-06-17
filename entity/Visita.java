@@ -11,7 +11,6 @@ public class Visita {
     public double costo;
     public String usernameVet;
 
-    public Visita() {}
     public Visita(String tipoVisita, String descrizione, double costo, String usernameVet) {
         this.tipoVisita = tipoVisita;
         this.descrizione = descrizione;
@@ -19,9 +18,6 @@ public class Visita {
         this.usernameVet = usernameVet;
     }
 
-    public int getId() {
-        return id;
-    }
     public String getTipoVisita() {
         return tipoVisita;
     }
@@ -33,18 +29,6 @@ public class Visita {
     }
     public String getUsernameVet() {
         return usernameVet;
-    }
-    public void setTipoVisita(String tipoVisita) {
-        this.tipoVisita = tipoVisita;
-    }
-    public void setDescrizione(String descrizione) {
-        this.descrizione = descrizione;
-    }
-    public void setCosto(double costo) {
-        this.costo = costo;
-    }
-    public void setUsernameVet(String usernameVet) {
-        this.usernameVet = usernameVet;
     }
 
     public int saveVisita(Visita v) {

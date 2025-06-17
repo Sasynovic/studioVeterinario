@@ -113,7 +113,7 @@ public class ProCMS {
 
         effettuaPrenotazioneButton.addActionListener(e -> {
             try {
-                new effettuaPrenotazione(frame, username).setVisible(true);
+                new EffettuaPrenotazione(frame, username).setVisible(true);
             } catch (Exception ex) {
                 utilities.showErrorMessage(proPanel,"Errore durante la prenotazione: " + ex.getMessage());
             }
@@ -121,7 +121,7 @@ public class ProCMS {
 
         modificaProfiloButton.addActionListener(e -> {
             try{
-                new modificaProfilo(frame, username).setVisible(true);
+                new ModificaProfilo(frame, username).setVisible(true);
             } catch (SQLException | ClassNotFoundException ex) {
                 utilities.showErrorMessage(proPanel,"Errore durante la modifica del profilo: " + ex.getMessage());
             }
@@ -129,7 +129,7 @@ public class ProCMS {
 
         visualizzaAnimaliButton.addActionListener(e -> {
             try {
-                new visualizzaAnimali(frame, username).setVisible(true);
+                new VisualizzaAnimali(frame, username).setVisible(true);
             } catch (SQLException | ClassNotFoundException ex) {
                 utilities.showErrorMessage(proPanel,"Errore durante la visualizzazione degli animali: " + ex.getMessage());
             }
@@ -137,8 +137,8 @@ public class ProCMS {
     }
 
     // Dialog per inserire un animale
-    private static class inserisciAnimale extends JDialog {
-        public inserisciAnimale(JFrame parente, String usernameProprietario) throws SQLException, ClassNotFoundException {
+    private static class InserisciAnimale extends JDialog {
+        public InserisciAnimale(JFrame parente, String usernameProprietario) throws SQLException, ClassNotFoundException {
             super(parente, "Inserisci Animale", true);
 
             // Form principale come sezione coerente
@@ -234,13 +234,12 @@ public class ProCMS {
             setLocationRelativeTo(parente); // centra la finestra
         }
     }
-
     // Dialog per effettuare una prenotazione con calendario visuale
-    private static class effettuaPrenotazione extends JDialog {
+    private static class EffettuaPrenotazione extends JDialog {
         private Date dataSelezionata = null;
         private JLabel dataSelezionataLabel;
 
-        public effettuaPrenotazione(JFrame parente, String usernameProprietario) throws SQLException, ClassNotFoundException {
+        public EffettuaPrenotazione(JFrame parente, String usernameProprietario) throws SQLException, ClassNotFoundException {
             super(parente, "Effettua Prenotazione", true);
 
             AgendaController ac = new AgendaController();
@@ -404,13 +403,13 @@ public class ProCMS {
             annullaButton.addActionListener(e -> dispose());
         }
     }
-    private class modificaProfilo extends JDialog {
+    private class ModificaProfilo extends JDialog {
         private File selectedImageFile;
         private JLabel previewLabel;
         private static final String DEFAULT_PROFILE_IMAGE = "default.png";
         private static final int PREVIEW_SIZE = 100;
 
-        public modificaProfilo(JFrame parente, String usernameUtente) throws SQLException, ClassNotFoundException {
+        public ModificaProfilo(JFrame parente, String usernameUtente) throws SQLException, ClassNotFoundException {
             super(parente, "Modifica profilo", true);
 
             UtenteController utenteController = new UtenteController();
@@ -643,7 +642,7 @@ public class ProCMS {
             }
         }
     }
-    private static class visualizzaAnimali extends JDialog {
+    private static class VisualizzaAnimali extends JDialog {
         private DefaultTableModel model;
         private JTable table;
         private List<Animale> animali;
@@ -651,7 +650,7 @@ public class ProCMS {
         private String usernameProprietario;
         private JFrame parente;
 
-        public visualizzaAnimali(JFrame parente, String usernameProprietario) throws SQLException, ClassNotFoundException {
+        public VisualizzaAnimali(JFrame parente, String usernameProprietario) throws SQLException, ClassNotFoundException {
             super(parente, "Visualizza Animali", true);
             this.parente = parente;
             this.usernameProprietario = usernameProprietario;
@@ -700,9 +699,9 @@ public class ProCMS {
 
             // Listener per il pulsante Inserisci Animale
             inserisciAnimaleButton.addActionListener(e -> {
-                inserisciAnimale dialog = null;
+                InserisciAnimale dialog = null;
                 try {
-                    dialog = new inserisciAnimale(parente, usernameProprietario);
+                    dialog = new InserisciAnimale(parente, usernameProprietario);
                 } catch (SQLException ex) {
                     throw new RuntimeException(ex);
                 } catch (ClassNotFoundException ex) {
@@ -1019,6 +1018,7 @@ public class ProCMS {
             return table.getSelectedRow();
         }
     }
+
     private void waitForImageWrite(File file, int maxAttempts, int delayMillis) {
         int attempts = 0;
         while (!file.exists() && attempts < maxAttempts) {

@@ -29,19 +29,4 @@ public class DBConnectionManager {
             }
         }
     }
-
-        public static ResultSet selectQuery(String query) throws SQLException, ClassNotFoundException {
-        Connection conn = getConnection();
-        Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery(query);
-        return rs;
-    }
-
-    public static int updateQuery(String query) throws SQLException, ClassNotFoundException {
-        Connection conn = getConnection();
-        Statement stmt = conn.createStatement();
-        int rowsAffected = stmt.executeUpdate(query);
-        closeConnection(conn);
-        return rowsAffected;
-    }
 }

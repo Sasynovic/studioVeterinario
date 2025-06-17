@@ -5,11 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import entity.Utente;
-import controller.LoginResult;
+import dto.LoginDTO;
 
 public class UtenteDAO {
 
-    public LoginResult login(String username, String password) throws SQLException, ClassNotFoundException {
+    public LoginDTO login(String username, String password) throws SQLException, ClassNotFoundException {
         String query = "SELECT  nome, cognome, password, tipoUtente, immagineProfilo FROM utente WHERE username = ?";
 
         try (Connection conn = DBConnectionManager.getConnection();
@@ -26,12 +26,12 @@ public class UtenteDAO {
                     String immagineProfilo = rs.getString("immagineProfilo");
 
                     if (dbPassword.equals(password)) {
-                        return new LoginResult(true, tipoUtente, "Login effettuato con successo.", nome, cognome, username,immagineProfilo);
+                        return new LoginDTO(true, tipoUtente, "Login effettuato con successo.", nome, cognome, username,immagineProfilo);
                     } else {
-                        return new LoginResult(false, 0, "Password errata.", nome, cognome, username,immagineProfilo);
+                        return new LoginDTO(false, 0, "Password errata.", nome, cognome, username,immagineProfilo);
                     }
                 } else {
-                    return new LoginResult(false, 0, "Username non trovato.", "", "", username,"");
+                    return new LoginDTO(false, 0, "Username non trovato.", "", "", username,"");
                 }
             }
         } catch (SQLException e) {

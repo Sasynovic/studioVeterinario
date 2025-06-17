@@ -6,7 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
 
-import controller.LoginResult;
+import dto.LoginDTO;
 import controller.UtenteController;
 
 public class LoginPage {
@@ -75,7 +75,7 @@ public class LoginPage {
 
                 UtenteController loginc = new UtenteController();
                 try {
-                    LoginResult user = loginc.login(username, password);
+                    LoginDTO user = loginc.login(username, password);
 
                     if (user.isSuccess()) {
                         JOptionPane.showMessageDialog(frame,

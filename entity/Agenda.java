@@ -1,13 +1,13 @@
 package entity;
 
 import database.AgendaDAO;
-import database.PrenotazioneDAO;
 
 import java.util.Date;
 import java.util.List;
 
 public class Agenda {
 
+    // nell'agenda potrebbero essere visualizzati tutti i dati relativi ad una visita oppure ad una prenotazione, con annessi farmaci, ma nel nostro ambulatorio non era previsto
     public Date data;
     public int orario;
 
@@ -66,7 +66,6 @@ public class Agenda {
             return null;
         }
     }
-
 
     public List<Agenda> getPrenotazioneByDate(Date data) {
         AgendaDAO agendaDAO = new AgendaDAO();
