@@ -10,7 +10,7 @@ import controller.LoginResult;
 public class UtenteDAO {
 
     public LoginResult login(String username, String password) throws SQLException, ClassNotFoundException {
-        String query = "SELECT  nome, cognome, password, tipoUtente FROM utente WHERE username = ?";
+        String query = "SELECT  nome, cognome, password, tipoUtente, immagineProfilo FROM utente WHERE username = ?";
 
         try (Connection conn = DBConnectionManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -23,14 +23,15 @@ public class UtenteDAO {
                     int tipoUtente = rs.getInt("tipoUtente");
                     String nome = rs.getString("nome");
                     String cognome = rs.getString("cognome");
+                    String immagineProfilo = rs.getString("immagineProfilo");
 
                     if (dbPassword.equals(password)) {
-                        return new LoginResult(true, tipoUtente, "Login effettuato con successo.", nome, cognome, username);
+                        return new LoginResult(true, tipoUtente, "Login effettuato con successo.", nome, cognome, username,immagineProfilo);
                     } else {
-                        return new LoginResult(false, 0, "Password errata.", nome, cognome, username);
+                        return new LoginResult(false, 0, "Password errata.", nome, cognome, username,immagineProfilo);
                     }
                 } else {
-                    return new LoginResult(false, 0, "Username non trovato.", "", "", username);
+                    return new LoginResult(false, 0, "Username non trovato.", "", "", username,"");
                 }
             }
         } catch (SQLException e) {

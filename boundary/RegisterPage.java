@@ -7,12 +7,10 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.io.File;
 import java.util.regex.Pattern;
-
 import controller.UtenteController;
 
-import boundary.Utilities;
-
 public class RegisterPage {
+    // Componenti UI
     private JPanel registerPanel;
     private JTextField usernameTextField;
     private JPasswordField passwordPasswordField;
@@ -22,25 +20,30 @@ public class RegisterPage {
     private JTextField emailTextField;
     private JTextField immagineProfiloTextField;
     private JButton scegliImmagineButton;
-
     private JButton registratiButton;
     private JButton backButton;
     private JCheckBox mostraPasswordCheckBox;
 
-    // Labels per messaggi di errore/validazione
+    // Etichette di stato
     private JLabel usernameStatusLabel;
     private JLabel passwordStatusLabel;
     private JLabel emailStatusLabel;
     private JLabel confirmPasswordLabel;
 
+    // Riferimenti e utility
     private JFrame frame;
+    private Utilities utilities = new Utilities();
 
-    Utilities utilities = new Utilities();
+    // Gestione immagini
+    private JPanel immaginePanel;
+    private JLabel previewLabel;
+    private static final String DEFAULT_PROFILE_IMAGE = "default.png";
+    private File selectedImageFile;
+    private static final int PREVIEW_WIDTH = 100;
+    private static final int PREVIEW_HEIGHT = 100;
 
     // Pattern per validazione email
     private static final Pattern EMAIL_PATTERN =
-            // Validazione dell'indirizzo email con regex conforme agli standard comuni.
-            // Accetta lettere, numeri e simboli consentiti prima della @ e un dominio valido con TLD.
             Pattern.compile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
 
     public RegisterPage(JFrame frame) {
@@ -57,7 +60,7 @@ public class RegisterPage {
         registerPanel.setLayout(new BoxLayout(registerPanel, BoxLayout.Y_AXIS));
         registerPanel.setBorder(BorderFactory.createEmptyBorder(20, 40, 20, 40));
 
-        // Campi di testo con validazione
+        // Inizializzazione componenti
         usernameTextField = createTextField("Username");
         passwordPasswordField = createPasswordField("Password");
         ripetiPasswordPasswordField = createPasswordField("Ripeti Password");
@@ -65,65 +68,36 @@ public class RegisterPage {
         cognomeTextField = createTextField("Cognome");
         emailTextField = createTextField("Email");
 
-        // Labels di stato per validazione
         usernameStatusLabel = createStatusLabel();
         passwordStatusLabel = createStatusLabel();
         emailStatusLabel = createStatusLabel();
         confirmPasswordLabel = createStatusLabel();
 
-        // Checkbox per mostrare password
         mostraPasswordCheckBox = new JCheckBox("Mostra password");
         mostraPasswordCheckBox.setBackground(new Color(245, 250, 255));
         mostraPasswordCheckBox.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Bottoni
         registratiButton = utilities.createButton("Registrati", new Color(70, 130, 180));
         backButton = utilities.createButton("Indietro", new Color(180, 70, 70));
-
-        registratiButton.setEnabled(false); // Disabilitato inizialmente
-
+        registratiButton.setEnabled(false);
     }
 
     private void setupLayout() {
-        // Titolo
-        JLabel titleLabel = new JLabel("Crea il tuo Account");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        titleLabel.setForeground(new Color(70, 130, 180));
-
-        // Pannello per immagine profilo
-        JPanel immaginePanel = createImagePanel();
-
-        // Aggiunta componenti
-        registerPanel.add(titleLabel);
+        registerPanel.add(createTitleLabel());
         registerPanel.add(Box.createVerticalStrut(20));
 
-        registerPanel.add(usernameTextField);
-        registerPanel.add(usernameStatusLabel);
-        registerPanel.add(Box.createVerticalStrut(10));
-
-        registerPanel.add(passwordPasswordField);
-        registerPanel.add(passwordStatusLabel);
-        registerPanel.add(Box.createVerticalStrut(5));
-
-        registerPanel.add(ripetiPasswordPasswordField);
-        registerPanel.add(confirmPasswordLabel);
-        registerPanel.add(Box.createVerticalStrut(5));
+        addFormField(usernameTextField, usernameStatusLabel);
+        addFormField(passwordPasswordField, passwordStatusLabel);
+        addFormField(ripetiPasswordPasswordField, confirmPasswordLabel);
 
         registerPanel.add(mostraPasswordCheckBox);
         registerPanel.add(Box.createVerticalStrut(10));
 
-        registerPanel.add(nomeTextField);
-        registerPanel.add(Box.createVerticalStrut(10));
+        addFormField(nomeTextField, null);
+        addFormField(cognomeTextField, null);
+        addFormField(emailTextField, emailStatusLabel);
 
-        registerPanel.add(cognomeTextField);
-        registerPanel.add(Box.createVerticalStrut(10));
-
-        registerPanel.add(emailTextField);
-        registerPanel.add(emailStatusLabel);
-        registerPanel.add(Box.createVerticalStrut(10));
-
-        registerPanel.add(immaginePanel);
+        registerPanel.add(createImagePanel());
         registerPanel.add(Box.createVerticalStrut(20));
 
         registerPanel.add(registratiButton);
@@ -131,9 +105,25 @@ public class RegisterPage {
         registerPanel.add(backButton);
     }
 
+    private JLabel createTitleLabel() {
+        JLabel titleLabel = new JLabel("Crea il tuo Account");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        titleLabel.setForeground(new Color(70, 130, 180));
+        return titleLabel;
+    }
+
+    private void addFormField(JComponent field, JLabel statusLabel) {
+        registerPanel.add(field);
+        if (statusLabel != null) {
+            registerPanel.add(statusLabel);
+        }
+        registerPanel.add(Box.createVerticalStrut(10));
+    }
+
     private JPanel createImagePanel() {
-        JPanel immaginePanel = new JPanel();
-        immaginePanel.setLayout(new BoxLayout(immaginePanel, BoxLayout.X_AXIS));
+        immaginePanel = new JPanel();
+        immaginePanel.setLayout(new BoxLayout(immaginePanel, BoxLayout.Y_AXIS));
         immaginePanel.setAlignmentX(Component.CENTER_ALIGNMENT);
         immaginePanel.setBackground(new Color(245, 250, 255));
         immaginePanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
@@ -141,7 +131,14 @@ public class RegisterPage {
         // Etichetta
         JLabel imgLabel = new JLabel("Immagine Profilo (opzionale):");
         imgLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        imgLabel.setAlignmentY(Component.CENTER_ALIGNMENT);
+        imgLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // Anteprima immagine
+        previewLabel = new JLabel();
+        previewLabel.setPreferredSize(new Dimension(PREVIEW_WIDTH, PREVIEW_HEIGHT));
+        previewLabel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+        previewLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        loadDefaultImage();
 
         // Campo testo
         immagineProfiloTextField = new JTextField();
@@ -154,138 +151,132 @@ public class RegisterPage {
         // Bottone
         scegliImmagineButton = new JButton("Scegli File");
         scegliImmagineButton.setPreferredSize(new Dimension(100, 30));
-        scegliImmagineButton.setAlignmentY(Component.CENTER_ALIGNMENT);
 
-        // Aggiunta componenti al pannello principale
-        immaginePanel.add(Box.createHorizontalStrut(10));
+        // Pannello controlli
+        JPanel controlsPanel = new JPanel();
+        controlsPanel.setLayout(new BoxLayout(controlsPanel, BoxLayout.X_AXIS));
+        controlsPanel.add(Box.createHorizontalStrut(10));
+        controlsPanel.add(immagineProfiloTextField);
+        controlsPanel.add(Box.createHorizontalStrut(10));
+        controlsPanel.add(scegliImmagineButton);
+        controlsPanel.add(Box.createHorizontalStrut(10));
+
+        // Composizione pannello
         immaginePanel.add(imgLabel);
-        immaginePanel.add(Box.createHorizontalStrut(10));
-        immaginePanel.add(immagineProfiloTextField);
-        immaginePanel.add(Box.createHorizontalStrut(10));
-        immaginePanel.add(scegliImmagineButton);
-        immaginePanel.add(Box.createHorizontalStrut(10));
+        immaginePanel.add(Box.createVerticalStrut(10));
+        immaginePanel.add(previewLabel);
+        immaginePanel.add(Box.createVerticalStrut(10));
+        immaginePanel.add(controlsPanel);
 
         return immaginePanel;
     }
 
+    private void loadDefaultImage() {
+        ImageIcon defaultIcon = new ImageIcon(getClass().getResource("/images/propic/" + DEFAULT_PROFILE_IMAGE));
+        if (defaultIcon != null) {
+            Image img = defaultIcon.getImage().getScaledInstance(
+                    PREVIEW_WIDTH, PREVIEW_HEIGHT, Image.SCALE_SMOOTH);
+            previewLabel.setIcon(new ImageIcon(img));
+        }
+    }
+
     private void setupValidation() {
-        // Validazione username
-        usernameTextField.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent e) {
-                validateUsername();
-                checkFormValidity();
-            }
-        });
+        addValidationListener(usernameTextField, this::validateUsername);
+        addValidationListener(passwordPasswordField, this::validatePassword);
+        addValidationListener(ripetiPasswordPasswordField, this::validatePasswordConfirmation);
+        addValidationListener(emailTextField, this::validateEmail);
+    }
 
-        // Validazione password
-        passwordPasswordField.addFocusListener(new FocusAdapter() {
+    private void addValidationListener(JComponent component, Runnable validator) {
+        component.addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
-                validatePassword();
-                checkFormValidity();
-            }
-        });
-
-        // Validazione conferma password
-        ripetiPasswordPasswordField.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent e) {
-                validatePasswordConfirmation();
-                checkFormValidity();
-            }
-        });
-
-        // Validazione email
-        emailTextField.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent e) {
-                validateEmail();
+                validator.run();
                 checkFormValidity();
             }
         });
     }
 
     private void setupEventHandlers() {
-        // Checkbox mostra password
+        // Mostra/nascondi password
         mostraPasswordCheckBox.addActionListener(e -> {
-            if (mostraPasswordCheckBox.isSelected()) {
-                passwordPasswordField.setEchoChar((char) 0);
-                ripetiPasswordPasswordField.setEchoChar((char) 0);
-            } else {
-                passwordPasswordField.setEchoChar('•');
-                ripetiPasswordPasswordField.setEchoChar('•');
-            }
+            char echoChar = mostraPasswordCheckBox.isSelected() ? (char) 0 : '•';
+            passwordPasswordField.setEchoChar(echoChar);
+            ripetiPasswordPasswordField.setEchoChar(echoChar);
         });
 
-        // File chooser per immagine
-        scegliImmagineButton.addActionListener(e -> {
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
-                    "Immagini", "jpg", "jpeg", "png", "gif"));
-
-            int result = fileChooser.showOpenDialog(registerPanel);
-            if (result == JFileChooser.APPROVE_OPTION) {
-                File selectedFile = fileChooser.getSelectedFile();
-                immagineProfiloTextField.setText(selectedFile.getName());
-                immagineProfiloTextField.setForeground(Color.BLACK);
-            }
-        });
+        // Selezione immagine
+        scegliImmagineButton.addActionListener(e -> selectProfileImage());
 
         // Bottone indietro
-        backButton.addActionListener(e -> {
-            int choice = JOptionPane.showConfirmDialog(
-                    registerPanel,
-                    "Sei sicuro di voler tornare indietro? I dati inseriti andranno persi.",
-                    "Conferma",
-                    JOptionPane.YES_NO_OPTION
-            );
-
-            if (choice == JOptionPane.YES_OPTION) {
-                frame.setContentPane(new Homepage().getHomepagePanel());
-                frame.revalidate();
-                frame.repaint();
-            }
-        });
+        backButton.addActionListener(e -> confirmExit());
 
         // Bottone registrazione
-        // Bottone registrazione con gestione delle eccezioni
-        registratiButton.addActionListener(e -> {
-            if (validateAllFields()) {
-                try {
-                   new UtenteController().addUser(
-                            getUsername(),
-                            getNome(),
-                            getCognome(),
-                            getEmail(),
-                            getPassword(),
-                            getImmagineProfiloPath()
-                    );
+        registratiButton.addActionListener(e -> registerUser());
+    }
 
-                    // Torna al login solo se la registrazione è avvenuta con successo
-                    frame.setContentPane(new LoginPage(frame).getLoginPanel());
-                    frame.revalidate();
-                    frame.repaint();
+    private void selectProfileImage() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
+                "Immagini", "jpg", "jpeg", "png", "gif"));
 
-                } catch (SQLException ex) {
-                    // Gestisci errori SQL (es. username già esistente, campi obbligatori mancanti)
-                    JOptionPane.showMessageDialog(
-                            frame,
-                            "Errore durante la registrazione: " + ex.getMessage(),
-                            "Errore",
-                            JOptionPane.ERROR_MESSAGE
-                    );
-                } catch (ClassNotFoundException ex) {
-                    // Gestisci errori di connessione al database
-                    JOptionPane.showMessageDialog(
-                            frame,
-                            "Errore di connessione al database: " + ex.getMessage(),
-                            "Errore",
-                            JOptionPane.ERROR_MESSAGE
-                    );
-                }
+        if (fileChooser.showOpenDialog(registerPanel) == JFileChooser.APPROVE_OPTION) {
+            selectedImageFile = fileChooser.getSelectedFile();
+            immagineProfiloTextField.setText(selectedImageFile.getName());
+            immagineProfiloTextField.setForeground(Color.BLACK);
+            updateImagePreview(selectedImageFile);
+        }
+    }
+
+    private void updateImagePreview(File imageFile) {
+        ImageIcon icon = new ImageIcon(imageFile.getAbsolutePath());
+        Image img = icon.getImage().getScaledInstance(
+                PREVIEW_WIDTH, PREVIEW_HEIGHT, Image.SCALE_SMOOTH);
+        previewLabel.setIcon(new ImageIcon(img));
+    }
+
+    private void confirmExit() {
+        int choice = JOptionPane.showConfirmDialog(
+                registerPanel,
+                "Sei sicuro di voler tornare indietro? I dati inseriti andranno persi.",
+                "Conferma",
+                JOptionPane.YES_NO_OPTION);
+
+        if (choice == JOptionPane.YES_OPTION) {
+            frame.setContentPane(new Homepage().getHomepagePanel());
+            frame.revalidate();
+            frame.repaint();
+        }
+    }
+
+    private void registerUser() {
+        if (validateAllFields()) {
+            try {
+                new UtenteController().addUser(
+                        getUsername(),
+                        getNome(),
+                        getCognome(),
+                        getEmail(),
+                        getPassword(),
+                        getImmagineProfiloPath());
+
+                frame.setContentPane(new LoginPage(frame).getLoginPanel());
+                frame.revalidate();
+                frame.repaint();
+            } catch (SQLException ex) {
+                showError("Errore durante la registrazione: " + ex.getMessage());
+            } catch (ClassNotFoundException ex) {
+                showError("Errore di connessione al database: " + ex.getMessage());
             }
-        });
+        }
+    }
+
+    private void showError(String message) {
+        JOptionPane.showMessageDialog(
+                frame,
+                message,
+                "Errore",
+                JOptionPane.ERROR_MESSAGE);
     }
 
     private void validateUsername() {
@@ -411,14 +402,39 @@ public class RegisterPage {
         return field;
     }
 
-
     // Getter methods esistenti
     public JPanel getRegisterPanel() { return registerPanel; }
     public String getUsername() { return usernameTextField.getText().trim(); }
     public String getPassword() { return new String(passwordPasswordField.getPassword()); }
-    public String getRipetiPassword() { return new String(ripetiPasswordPasswordField.getPassword()); }
     public String getNome() { return nomeTextField.getText().trim(); }
     public String getCognome() { return cognomeTextField.getText().trim(); }
     public String getEmail() { return emailTextField.getText().trim(); }
-    public String getImmagineProfiloPath() { return immagineProfiloTextField.getText(); }
+
+    private String getImmagineProfiloPath() {
+        if (selectedImageFile == null || !selectedImageFile.exists()) {
+            return DEFAULT_PROFILE_IMAGE;
+        }
+
+        File profileDir = new File("images/propic/");
+        if (!profileDir.exists()) {
+            profileDir.mkdirs();
+        }
+
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String extension = selectedImageFile.getName().substring(
+                selectedImageFile.getName().lastIndexOf("."));
+        String newFileName = "img_" + timestamp + extension;
+
+        try {
+            File destination = new File(profileDir, newFileName);
+            java.nio.file.Files.copy(
+                    selectedImageFile.toPath(),
+                    destination.toPath(),
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            return newFileName;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return DEFAULT_PROFILE_IMAGE;
+        }
+    }
 }

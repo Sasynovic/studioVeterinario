@@ -97,7 +97,7 @@ public class LoginPage {
                                 frame.repaint();
                                 break;
                             case 3: // Proprietario
-                                frame.setContentPane(new ProCMS(frame, user.getNome(), user.getCognome(), user.getUsername() ).getProPanel());
+                                frame.setContentPane(new ProCMS(frame, user.getNome(), user.getCognome(), user.getUsername() , user.getImmagineProfilo()).getProPanel());
                                 frame.revalidate();
                                 frame.repaint();
                                 break;

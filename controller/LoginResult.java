@@ -7,14 +7,16 @@ public class LoginResult {
     private String nome;
     private String cognome;
     private String username;
+    private String immagineProfilo;
 
-    public LoginResult(boolean success, int tipoUtente, String message, String nome, String cognome, String username) {
+    public LoginResult(boolean success, int tipoUtente, String message, String nome, String cognome, String username, String immagineProfilo) {
         this.success = success;
         this.tipoUtente = tipoUtente;
         this.message = message;
         this.nome = nome;
         this.cognome = cognome;
         this.username = username;
+        this.immagineProfilo = immagineProfilo;
     }
 
     public boolean isSuccess() {
@@ -34,6 +36,9 @@ public class LoginResult {
     }
     public String getUsername() {
         return username;
+    }
+    public String getImmagineProfilo() {
+        return immagineProfilo;
     }
 }
 
