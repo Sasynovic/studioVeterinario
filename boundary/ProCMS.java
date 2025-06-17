@@ -14,7 +14,6 @@ import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
-import java.util.*;
 import java.util.List;
 import java.util.Date;
 
@@ -235,7 +234,7 @@ public class ProCMS {
     }
 
     // Dialog per effettuare una prenotazione con calendario visuale
-    private static class effettuaPrenotazione extends JDialog{
+    private static class effettuaPrenotazione extends JDialog {
         private Date dataSelezionata = null;
         private JLabel dataSelezionataLabel;
 
@@ -255,7 +254,14 @@ public class ProCMS {
             mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
             // Calendario personalizzato
-            JPanel calendarioPanel = createAdvancedCalendar();
+            dataSelezionataLabel = new JLabel("Nessuna data selezionata", JLabel.CENTER);
+            dataSelezionataLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
+            dataSelezionataLabel.setForeground(new Color(70, 130, 180));
+
+            // Creazione del calendario con callback per la selezione della data
+            JPanel calendarioPanel = utilities.createAdvancedCalendar(dataSelezionataLabel, selectedDate -> {
+                dataSelezionata = selectedDate;
+            });
             mainPanel.add(calendarioPanel, BorderLayout.CENTER);
 
             // Pannello inferiore per prenotazioni e bottoni
@@ -266,9 +272,6 @@ public class ProCMS {
 
             // Label data selezionata
             gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
-            dataSelezionataLabel = new JLabel("Nessuna data selezionata", JLabel.CENTER);
-            dataSelezionataLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
-            dataSelezionataLabel.setForeground(new Color(70, 130, 180));
             bottomPanel.add(dataSelezionataLabel, gbc);
 
             // ComboBox prenotazioni
@@ -361,11 +364,8 @@ public class ProCMS {
                                 animaleCombo.addItem(a);
                             }
                         }
-                        JOptionPane.showMessageDialog(this, "Trovate " + agenda + " prenotazioni disponibili.");
+                        JOptionPane.showMessageDialog(this, "Trovate " + agenda.size() + " prenotazioni disponibili.");
                     }
-
-
-
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(this, "Errore durante la ricerca: " + ex.getMessage());
                 }
@@ -398,163 +398,10 @@ public class ProCMS {
                     JOptionPane.showMessageDialog(this, "Errore durante la prenotazione: " + ex.getMessage());
                 }
             });
+
             annullaButton.addActionListener(e -> dispose());
+        }
     }
-
-        private JPanel createAdvancedCalendar() {
-            JPanel panel = new JPanel(new BorderLayout());
-            panel.setBorder(BorderFactory.createTitledBorder("Seleziona Data"));
-            panel.setBackground(new Color(245, 250, 255));
-
-            // Header con mese e anno
-            JPanel headerPanel = new JPanel(new FlowLayout());
-            headerPanel.setBackground(new Color(245, 250, 255));
-
-            Calendar cal = Calendar.getInstance();
-
-            JButton prevButton = new JButton("<");
-            JButton nextButton = new JButton(">");
-            JLabel meseAnnoLabel = new JLabel();
-
-            prevButton.setPreferredSize(new Dimension(60, 40));
-            nextButton.setPreferredSize(new Dimension(60, 40));
-
-            updateMeseAnnoLabel(meseAnnoLabel, cal);
-
-            headerPanel.add(prevButton);
-            headerPanel.add(meseAnnoLabel);
-            headerPanel.add(nextButton);
-
-            // Griglia giorni
-            JPanel giorniPanel = new JPanel(new GridLayout(7, 7, 2, 2));
-            giorniPanel.setBackground(new Color(245, 250, 255));
-
-            // Header giorni settimana
-            String[] giorni = {"Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"};
-            for (String giorno : giorni) {
-                JLabel label = new JLabel(giorno, JLabel.CENTER);
-                label.setFont(new Font("Segoe UI", Font.BOLD, 12));
-                label.setForeground(new Color(70, 130, 180));
-                giorniPanel.add(label);
-            }
-
-            // Bottoni per i giorni
-            JButton[][] giorniButtoms = new JButton[6][7];
-            for (int i = 0; i < 6; i++) {
-                for (int j = 0; j < 7; j++) {
-                    giorniButtoms[i][j] = new JButton();
-                    giorniButtoms[i][j].setPreferredSize(new Dimension(40, 40));
-                    giorniButtoms[i][j].setBackground(Color.WHITE);
-                    giorniButtoms[i][j].setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
-
-                    final int row = i, col = j;
-                    giorniButtoms[i][j].addActionListener(e -> {
-                        // Reset colori
-                        for (int x = 0; x < 6; x++) {
-                            for (int y = 0; y < 7; y++) {
-                                giorniButtoms[x][y].setBackground(Color.WHITE);
-                                giorniButtoms[x][y].setForeground(Color.BLACK); // ← Aggiungi questa riga
-
-                            }
-                        }
-
-                        // Evidenzia selezionato
-                        giorniButtoms[row][col].setBackground(new Color(70, 130, 180));
-                        giorniButtoms[row][col].setForeground(Color.WHITE);
-
-                        // Calcola data selezionata
-                        String giornoText = giorniButtoms[row][col].getText();
-                        if (!giornoText.isEmpty()) {
-                            try {
-                                int giorno = Integer.parseInt(giornoText);
-                                Calendar newCal = (Calendar) cal.clone();
-                                newCal.set(Calendar.DAY_OF_MONTH, giorno);
-                                dataSelezionata = newCal.getTime();
-
-                                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-                                dataSelezionataLabel.setText("Data selezionata: " + sdf.format(dataSelezionata));
-                            } catch (NumberFormatException ignored) {}
-                        }
-                    });
-
-                    giorniPanel.add(giorniButtoms[i][j]);
-                }
-            }
-
-            // Popola calendario
-            Runnable updateCalendar = () -> {
-                updateMeseAnnoLabel(meseAnnoLabel, cal);
-                populateCalendar(giorniButtoms, cal);
-            };
-
-            prevButton.addActionListener(e -> {
-                cal.add(Calendar.MONTH, -1);
-                updateCalendar.run();
-            });
-
-            nextButton.addActionListener(e -> {
-                cal.add(Calendar.MONTH, 1);
-                updateCalendar.run();
-            });
-
-            updateCalendar.run();
-
-            panel.add(headerPanel, BorderLayout.NORTH);
-            panel.add(giorniPanel, BorderLayout.CENTER);
-
-            return panel;
-        }
-
-        private void updateMeseAnnoLabel(JLabel label, Calendar cal) {
-            String[] mesi = {"Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
-                    "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"};
-            label.setText(mesi[cal.get(Calendar.MONTH)] + " " + cal.get(Calendar.YEAR));
-            label.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        }
-
-        private void populateCalendar(JButton[][] buttons, Calendar cal) {
-            Calendar tempCal = (Calendar) cal.clone();
-            tempCal.set(Calendar.DAY_OF_MONTH, 1);
-
-            int startDay = tempCal.get(Calendar.DAY_OF_WEEK) - 1;
-            int daysInMonth = tempCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-
-            // Pulisci tutti i bottoni
-            for (int i = 0; i < 6; i++) {
-                for (int j = 0; j < 7; j++) {
-                    buttons[i][j].setText("");
-                    buttons[i][j].setBackground(Color.WHITE);
-                    buttons[i][j].setForeground(Color.BLACK);
-                    buttons[i][j].setEnabled(false);
-                }
-            }
-
-            // Popola con i giorni del mese
-            Calendar today = Calendar.getInstance();
-            int currentDay = 1;
-
-            for (int week = 0; week < 6 && currentDay <= daysInMonth; week++) {
-                for (int day = 0; day < 7 && currentDay <= daysInMonth; day++) {
-                    if (week == 0 && day < startDay) {
-                        continue;
-                    }
-
-                    buttons[week][day].setText(String.valueOf(currentDay));
-
-                    // Controlla se è oggi o nel futuro
-                    tempCal.set(Calendar.DAY_OF_MONTH, currentDay);
-                    if (!tempCal.before(today)) {
-                        buttons[week][day].setEnabled(true);
-                    } else {
-                        buttons[week][day].setForeground(Color.LIGHT_GRAY);
-                    }
-
-                    currentDay++;
-                }
-            }
-        }
-}
-
     private class modificaProfilo extends JDialog {
         private File selectedImageFile;
         private JLabel previewLabel;

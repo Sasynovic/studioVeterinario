@@ -4,9 +4,8 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
-import java.text.ParseException;
+
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -231,117 +230,165 @@ public class AdminCMS {
         }
 
     private static class InserisciDisponibilitaDialog extends JDialog {
-        private JTextField dataField;
-        private JComboBox<String> orarioCombo; // Dichiarata come campo della classe
+        private Date dataSelezionata;
+        private JLabel dataSelezionataLabel;
+        private JComboBox<String> orarioCombo;
         private JButton confermaButton;
         private JButton annullaButton;
 
         public InserisciDisponibilitaDialog(JFrame parente) {
-            super(parente, "Inserisci disponibilita", true);
+            super(parente, "Inserisci disponibilità", true);
 
-            // Titolo e pannello principale
-            JPanel contentPanel = utilities.createSectionPanel("Inserisci disponibilita");
-            contentPanel.setLayout(new GridLayout(3, 2, 10, 10));
+            JPanel mainPanel = utilities.createSectionPanel("Inserisci disponibilità");
+            mainPanel.setLayout(new BorderLayout(10, 10));
 
-            // Campi input
-            contentPanel.add(new JLabel("Data (YYYY-MM-DD):"));
-            dataField = new JTextField();
-            contentPanel.add(dataField);
+            AgendaController ac = new AgendaController();
 
-            contentPanel.add(new JLabel("Orario (HH:MM):"));
-            orarioCombo = new JComboBox<>(); // Inizializzata correttamente
-            for (int ora = 8; ora <= 17; ora++) {
-                orarioCombo.addItem(String.format("%02d:00", ora));
-            }
-            contentPanel.add(orarioCombo);
+            // Pannello per la selezione della data con il calendario
+            JPanel dataPanel = new JPanel(new BorderLayout());
+            dataSelezionataLabel = new JLabel("Nessuna data selezionata", JLabel.CENTER);
+            dataSelezionataLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
+            dataSelezionataLabel.setForeground(new Color(70, 130, 180));
 
-            // Bottoni
+            // Aggiungi il calendario avanzato con callback
+            JPanel calendarioPanel = utilities.createAdvancedCalendar(dataSelezionataLabel, selectedDate -> {
+                dataSelezionata = selectedDate;
+                aggiornaOrariDisponibili(ac);
+            });
+
+            // Limita l'altezza del calendario
+            calendarioPanel.setPreferredSize(new Dimension(calendarioPanel.getPreferredSize().width, 300));
+            calendarioPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 300));
+
+            dataPanel.add(calendarioPanel, BorderLayout.CENTER);
+            dataPanel.add(dataSelezionataLabel, BorderLayout.SOUTH);
+
+            // Pannello per la selezione dell'orario con più spazio
+            JPanel orarioPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+            orarioPanel.setBorder(BorderFactory.createTitledBorder("Seleziona Orario"));
+            orarioPanel.setPreferredSize(new Dimension(550, 60));
+
+            JLabel orarioLabel = new JLabel("Orario:");
+            orarioLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+            orarioPanel.add(orarioLabel);
+
+            orarioCombo = new JComboBox<>();
+            orarioCombo.setPreferredSize(new Dimension(120, 25));
+            orarioCombo.addItem("Seleziona prima una data"); // Placeholder iniziale
+            orarioCombo.setEnabled(false); // Disabilitato fino alla selezione della data
+            orarioPanel.add(orarioCombo);
+
+            // Pannello pulsanti
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+            buttonPanel.setPreferredSize(new Dimension(550, 50));
             confermaButton = utilities.createButton("Conferma", utilities.Green);
+            confermaButton.setEnabled(false); // Disabilitato inizialmente
             annullaButton = utilities.createButton("Annulla", utilities.Red);
-
-            JPanel buttonPanel = new JPanel();
-            buttonPanel.setLayout(new FlowLayout());
             buttonPanel.add(confermaButton);
             buttonPanel.add(annullaButton);
 
-            // Aggiunta ai pannelli della dialog
-            getContentPane().setLayout(new BorderLayout());
-            getContentPane().add(contentPanel, BorderLayout.CENTER);
-            getContentPane().add(buttonPanel, BorderLayout.SOUTH);
+            // Aggiungi tutto al pannello principale con BoxLayout per controllo migliore
+            mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+            mainPanel.add(dataPanel);
+            mainPanel.add(Box.createVerticalStrut(10)); // Spazio tra i componenti
+            mainPanel.add(orarioPanel);
+            mainPanel.add(Box.createVerticalStrut(10));
+            mainPanel.add(buttonPanel);
 
-            pack();
+            getContentPane().add(mainPanel);
+            setSize(650, 550); // Dimensione leggermente più grande
+            setMinimumSize(new Dimension(600, 500)); // Dimensione minima
             setLocationRelativeTo(parente);
 
-            // Azioni
+            // Forza il repaint dopo la creazione
+            SwingUtilities.invokeLater(() -> {
+                validate();
+                repaint();
+            });
+
+            // Listener per i pulsanti
             annullaButton.addActionListener(e -> dispose());
 
             confermaButton.addActionListener(e -> {
                 PrenotazioneController pc = new PrenotazioneController();
                 try {
-                    String dataInputString = dataField.getText().trim();
-                    int orario = orarioCombo.getSelectedIndex() + 8; // 8 è l'ora di inizio
-
-                    // Validazione data vuota
-                    if (dataInputString.isEmpty()) {
-                        JOptionPane.showMessageDialog(this, "Compila il campo data con un valore valido.");
-                        return;
-                    }
-
-                    // Validazione formato data
-                    Date dataInput = validaEConvertiData(dataInputString);
-                    if (dataInput == null) {
-                        JOptionPane.showMessageDialog(this, "Formato data non valido. Usa il formato YYYY-MM-DD (es: 2025-06-16).");
+                    // Validazione data
+                    if (dataSelezionata == null) {
+                        JOptionPane.showMessageDialog(this, "Seleziona una data dal calendario.");
                         return;
                     }
 
                     // Validazione data nel passato
                     Date oggi = new Date();
-                    if (dataInput.before(oggi)) {
+                    if (dataSelezionata.before(oggi)) {
                         JOptionPane.showMessageDialog(this, "Non puoi inserire una data nel passato.");
                         return;
                     }
 
-                    pc.inserisciDisponibilita(dataInput, orario, 0);
+                    // Validazione orario migliorata
+                    String orarioString = (String) orarioCombo.getSelectedItem();
+                    if (orarioString == null || orarioString.equals("Seleziona prima una data") ||
+                            orarioString.equals("Nessun orario disponibile")) {
+                        JOptionPane.showMessageDialog(this, "Seleziona un orario disponibile.");
+                        return;
+                    }
+
+                    // Debug: stampa l'orario selezionato
+                    System.out.println("Orario selezionato: " + orarioString);
+
+                    int orario = Integer.parseInt(orarioString.split(":")[0]);
+
+                    pc.inserisciDisponibilita(dataSelezionata, orario, 0);
                     JOptionPane.showMessageDialog(this, "Disponibilità inserita con successo.");
                     dispose();
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(this, "Formato orario non valido: " + ex.getMessage());
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(this, "Errore durante l'inserimento della disponibilità: " + ex.getMessage());
+                    ex.printStackTrace(); // Per debug
                 }
             });
         }
 
         /**
-         * Valida e converte una stringa in formato YYYY-MM-DD in un oggetto Date
-         * @param dataString la stringa da validare
-         * @return Date se valida, null se non valida
+         * Aggiorna la lista degli orari disponibili per la data selezionata
          */
-        private Date validaEConvertiData(String dataString) {
+        private void aggiornaOrariDisponibili(AgendaController ac) {
+            if (dataSelezionata == null) {
+                orarioCombo.removeAllItems();
+                orarioCombo.addItem("Seleziona prima una data");
+                orarioCombo.setEnabled(false);
+                confermaButton.setEnabled(false);
+                return;
+            }
+
             try {
-                // Pattern per validare il formato YYYY-MM-DD
-                if (!dataString.matches("\\d{4}-\\d{2}-\\d{2}")) {
-                    return null;
+                List<Agenda> orariDisponibili = ac.getOrariDisponibili(dataSelezionata);
+
+                // Rimuovi SwingUtilities.invokeLater per evitare problemi di concorrenza
+                orarioCombo.removeAllItems();
+
+                if (orariDisponibili.isEmpty()) {
+                    orarioCombo.addItem("Nessun orario disponibile");
+                    orarioCombo.setEnabled(false);
+                    confermaButton.setEnabled(false);
+                    JOptionPane.showMessageDialog(this, "Nessun orario disponibile per la data selezionata.");
+                } else {
+                    orarioCombo.setEnabled(true);
+                    confermaButton.setEnabled(true);
+
+                    // Debug: stampa gli orari trovati
+                    System.out.println("Orari disponibili trovati: " + orariDisponibili.size());
+
+                    for (Agenda orario : orariDisponibili) {
+                        String orarioFormatted = String.format("%02d:00", orario.getOrario());
+                        orarioCombo.addItem(orarioFormatted);
+                        System.out.println("Aggiunto orario: " + orarioFormatted); // Debug
+                    }
                 }
-
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                sdf.setLenient(false); // Non accetta date invalide come 2025-02-30
-
-                Date data = sdf.parse(dataString);
-
-                // Controlla che l'anno sia tra 2025 e 2030
-                Calendar cal = Calendar.getInstance();
-                cal.setTime(data);
-                int anno = cal.get(Calendar.YEAR);
-
-                if (anno < 2025 || anno > 2030) {
-                    return null;
-                }
-
-                return data;
-            } catch (ParseException e) {
-                return null;
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Errore durante il recupero degli orari: " + ex.getMessage());
+                ex.printStackTrace(); // Per debug
             }
         }
-    }
-}
-
-// Metodo helper per formattare la data
+    }}
