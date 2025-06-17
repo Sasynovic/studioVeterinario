@@ -160,8 +160,6 @@ public class AdminCMS {
             pack();
             setLocationRelativeTo(parente);
         }
-
-
     }
     private static class VisualizzaUltimaVaccinazioneDialog extends JDialog {
         public VisualizzaUltimaVaccinazioneDialog(JFrame parente){

@@ -25,7 +25,7 @@ public class AnimaleController {
         animale.delete(animale);
     }
 
-    public void updateAnimale(int chip, String nome, String tipo, String razza, String colore, Date dataNascita, int oldChip) throws SQLException, ClassNotFoundException {
+    public void updateAnimale(int chip, String nome, String tipo, String razza, String colore, Date dataNascita, int oldChip){
         Animale animale = new Animale(chip, nome, tipo, razza, colore, dataNascita, null);
         animale.update(animale, oldChip);
     }
