@@ -92,7 +92,7 @@ public class LoginPage {
                                 frame.repaint();
                                 break;
                             case 2: // Veterinario
-                                frame.setContentPane(new VetCMS(frame).getvetPanel());
+                                frame.setContentPane(new VetCMS(frame, user.getUsername()).getvetPanel());
                                 frame.revalidate();
                                 frame.repaint();
                                 break;
