@@ -11,7 +11,7 @@ public class VisitaDAO {
 
         if( v.getTipoVisita() == null || v.getTipoVisita().isEmpty() ||
                 v.getDescrizione() == null || v.getDescrizione().isEmpty() ||
-                v.getCosto() <= 0 ||
+                v.getCosto() < 0 ||
                 v.getUsernameVet() == null || v.getUsernameVet().isEmpty()) {
             throw new SQLException("Tutti i campi sono obbligatori.");
         }
