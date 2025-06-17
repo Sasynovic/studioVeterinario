@@ -92,10 +92,10 @@ public class LoginPage {
                                 frame.repaint();
                                 break;
                             case 2: // Veterinario
-//                                frame.setContentPane(new VetCMS(frame).getVetPanel());
-//                                frame.revalidate();
-//                                frame.repaint();
-//                                break;
+                                frame.setContentPane(new VetCMS(frame).getvetPanel());
+                                frame.revalidate();
+                                frame.repaint();
+                                break;
                             case 3: // Proprietario
                                 frame.setContentPane(new ProCMS(frame, user.getNome(), user.getCognome(), user.getUsername() ).getProPanel());
                                 frame.revalidate();
