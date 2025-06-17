@@ -1,8 +1,8 @@
-import boundary.Homepage;
+package boundary;
 
 import javax.swing.*;
 
-public class Main {
+public class FormMainWindow {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame("PetCare Vetenary Clinic");
