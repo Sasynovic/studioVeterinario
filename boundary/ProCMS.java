@@ -6,6 +6,8 @@ import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 
 // importiamo le exception necessarie per la gestione degli errori
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -655,7 +657,7 @@ public class ProCMS {
             this.usernameProprietario = usernameProprietario;
             this.animaleController = new AnimaleController();
 
-            setSize(800, 600);
+            setSize(900, 600);
             setLocationRelativeTo(parente);
 
             // Pannello principale
@@ -674,13 +676,13 @@ public class ProCMS {
             refreshAnimaliList();
 
             // Colonne della tabella
-            String[] columnNames = {"Chip", "Nome", "Razza", "Tipo", "Data di nascita" ," ", "  "};
+            String[] columnNames = {"Chip", "Nome", "Razza", "Tipo", "Data di nascita", "Modifica", "Cancella"};
 
             // Modello tabella
             model = new DefaultTableModel(columnNames, 0) {
                 @Override
                 public boolean isCellEditable(int row, int column) {
-                    return column == 4 || column == 5;
+                    return column == 5 || column == 6; // Solo i pulsanti sono editabili
                 }
             };
 
@@ -689,7 +691,9 @@ public class ProCMS {
 
             // Tabella
             table = new JTable(model);
-            table.setRowHeight(30);
+
+            // Configura la tabella
+            configureTable();
 
             // Configura renderer e editor per i pulsanti
             setupButtonColumns();
@@ -715,6 +719,7 @@ public class ProCMS {
 
             // Scroll pane
             JScrollPane scrollPane = new JScrollPane(table);
+            scrollPane.setBorder(BorderFactory.createTitledBorder("Lista Animali"));
             mainPanel.add(scrollPane, BorderLayout.CENTER);
             add(mainPanel, BorderLayout.CENTER);
         }
@@ -747,200 +752,271 @@ public class ProCMS {
             } catch (SQLException | ClassNotFoundException ex) {
                 JOptionPane.showMessageDialog(parente,
                         "Errore durante il caricamento degli animali: " + ex.getMessage(),
-                        "Errore", JOptionPane.ERROR_MESSAGE);}
+                        "Errore", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+
+        private void configureTable() {
+            // Configura la tabella per rendere i pulsanti immediatamente cliccabili
+            table.putClientProperty("terminateEditOnFocusLost", true);
+
+            // Migliora l'interazione con i pulsanti
+            table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            table.getTableHeader().setReorderingAllowed(false);
+            table.setRowHeight(40); // Aumenta l'altezza per i pulsanti
+
+            // Imposta le larghezze delle colonne
+            table.getColumnModel().getColumn(0).setPreferredWidth(80);  // Chip
+            table.getColumnModel().getColumn(1).setPreferredWidth(120); // Nome
+            table.getColumnModel().getColumn(2).setPreferredWidth(100); // Razza
+            table.getColumnModel().getColumn(3).setPreferredWidth(80);  // Tipo
+            table.getColumnModel().getColumn(4).setPreferredWidth(120); // Data nascita
+            table.getColumnModel().getColumn(5).setPreferredWidth(100); // Modifica
+            table.getColumnModel().getColumn(6).setPreferredWidth(100); // Cancella
+
+            // Impedisci il ridimensionamento delle colonne pulsanti
+            table.getColumnModel().getColumn(5).setResizable(false);
+            table.getColumnModel().getColumn(6).setResizable(false);
+
+            // Migliora il rendering generale
+            table.setFillsViewportHeight(true);
+            table.setShowGrid(true);
+            table.setGridColor(new Color(220, 220, 220));
+
+            // Listener per mouse hover (feedback visivo)
+            table.addMouseMotionListener(new MouseMotionAdapter() {
+                @Override
+                public void mouseMoved(MouseEvent e) {
+                    int row = table.rowAtPoint(e.getPoint());
+                    int col = table.columnAtPoint(e.getPoint());
+
+                    // Cambia cursore sui pulsanti
+                    if (col == 5 || col == 6) { // Colonne dei pulsanti
+                        table.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                    } else {
+                        table.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                    }
+                }
+            });
         }
 
         private void setupButtonColumns() {
-            // Renderer per i pulsanti
-            table.getColumn(" ").setCellRenderer(new TableCellRenderer() {
-                @Override
-                public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
-                                                               boolean hasFocus, int row, int column) {
-                    JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
-                    JButton btnModifica = utilities.createButton("Modifica", utilities.Orange);
-                    panel.add(btnModifica);
-                    return panel;
-                }
-            });
+            // Renderer personalizzato per il pulsante Modifica
+            table.getColumnModel().getColumn(5).setCellRenderer(new ButtonRenderer("Modifica", utilities.Orange));
+            table.getColumnModel().getColumn(5).setCellEditor(new ButtonEditor("Modifica", utilities.Orange, this::handleModifica));
 
-            table.getColumn("  ").setCellRenderer(new TableCellRenderer() {
-                @Override
-                public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
-                                                               boolean hasFocus, int row, int column) {
-                    JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
-                    JButton btnCancella = utilities.createButton("Cancella", utilities.Red);
-                    panel.add(btnCancella);
+            // Renderer personalizzato per il pulsante Cancella
+            table.getColumnModel().getColumn(6).setCellRenderer(new ButtonRenderer("Cancella", utilities.Red));
+            table.getColumnModel().getColumn(6).setCellEditor(new ButtonEditor("Cancella", utilities.Red, this::handleCancella));
+        }
 
-                    btnCancella.addActionListener(e -> {
-                        Animale animale = animali.get(row);
-                        int conferma = JOptionPane.showConfirmDialog(parente,
-                                "Sei sicuro di voler cancellare l'animale \"" + animale.getNome() + "\"?",
-                                "Conferma Cancellazione", JOptionPane.YES_NO_OPTION);
+        // Classe per il renderer dei pulsanti
+        private static class ButtonRenderer extends JButton implements TableCellRenderer {
+            private String text;
+            private Color buttonColor;
 
-                        if (conferma == JOptionPane.YES_OPTION) {
-                            try {
-                                animaleController.deleteAnimale(animale.getChip());
-                                model.removeRow(row);
-                                animali.remove(row);
-                                JOptionPane.showMessageDialog(parente,
-                                        "Animale \"" + animale.getNome() + "\" cancellato con successo.");
-                            } catch (Exception ex) {
-                                JOptionPane.showMessageDialog(parente,
-                                        "Errore durante la cancellazione: " + ex.getMessage(),
-                                        "Errore", JOptionPane.ERROR_MESSAGE);
-                            }
-                        }
-                    });
-                    return panel;
-                }
-            });
+            public ButtonRenderer(String text, Color buttonColor) {
+                this.text = text;
+                this.buttonColor = buttonColor;
+                setOpaque(true);
+            }
 
-            // Editor per Modifica
-            table.getColumn(" ").setCellEditor(new DefaultCellEditor(new JTextField()) {
-                private JPanel panel;
-                private JButton btnModifica = utilities.createButton("Modifica", utilities.Orange);
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                                                           boolean isSelected, boolean hasFocus, int row, int column) {
+                setText(text);
+                setBackground(buttonColor);
+                setForeground(Color.WHITE);
+                setFont(new Font("Segoe UI", Font.BOLD, 11));
+                setBorder(BorderFactory.createRaisedBevelBorder());
 
-                {
-                    panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
-                    panel.add(btnModifica);
-
-                    btnModifica.addActionListener(e -> {
-                        int row = table.getEditingRow();
-                        Animale animale = animali.get(row);
-
-                        JPanel formPanelAnimal = utilities.createSectionPanel("Modifica Animale");
-
-                        formPanelAnimal.setLayout(new GridLayout(0, 2, 10, 10));
-
-                        formPanelAnimal.add(new JLabel("Chip:"));
-                        JTextField chipField = new JTextField(String.valueOf(animale.getChip()));
-                        formPanelAnimal.add(chipField);
-
-                        formPanelAnimal.add(new JLabel("Nome:"));
-                        JTextField nomeField = new JTextField(animale.getNome());
-                        formPanelAnimal.add(nomeField);
-
-                        formPanelAnimal.add(new JLabel("Tipo:"));
-                        JComboBox<String> tipoCombo = new JComboBox<>(utilities.animalTypes);
-
-                        tipoCombo.setSelectedItem(animale.getTipo());
-                        formPanelAnimal.add(tipoCombo);
-
-                        formPanelAnimal.add(new JLabel("Razza:"));
-                        JTextField razzaField = new JTextField(animale.getRazza());
-                        formPanelAnimal.add(razzaField);
-
-                        formPanelAnimal.add(new JLabel("Colore:"));
-                        JTextField coloreField = new JTextField(animale.getColore());
-                        formPanelAnimal.add(coloreField);
-
-                        formPanelAnimal.add(new JLabel("Data di Nascita (yyyy/MM/gg):"));
-                        JTextField dataNascitaField = new JTextField(new SimpleDateFormat("yyyy/MM/dd").format(animale.getDataNascita()));
-                        formPanelAnimal.add(dataNascitaField);
-
-                        int conferma = JOptionPane.showConfirmDialog(parente, formPanelAnimal,
-                                "Modifica Animale", JOptionPane.OK_CANCEL_OPTION);
-                        if (conferma == JOptionPane.OK_OPTION) {
-                            // Estrai e valida i dati
-                            String chipText = chipField.getText().trim();
-                            String nome = nomeField.getText().trim();
-                            Object selectedItem = tipoCombo.getSelectedItem();
-                            String tipo = (selectedItem != null) ? selectedItem.toString() : "";
-                            String razza = razzaField.getText().trim();
-                            String colore = coloreField.getText().trim();
-                            String dataNascitaText = dataNascitaField.getText().trim();
-
-                            // Controlla campi vuoti
-                            if (chipText.isEmpty() || nome.isEmpty() || tipo.isEmpty() || razza.isEmpty() || colore.isEmpty() || dataNascitaText.isEmpty()) {
-                                JOptionPane.showMessageDialog(parente, "Tutti i campi sono obbligatori.");
-                                return;
-                            }
-
-                            int chip;
-                            try {
-                                chip = Integer.parseInt(chipText);
-                            } catch (NumberFormatException ex) {
-                                JOptionPane.showMessageDialog(parente, "Il chip deve essere un numero intero.");
-                                return;
-                            }
-
-                            Date dataNascita;
-                            try {
-                                SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
-                                sdf.setLenient(false);
-                                dataNascita = sdf.parse(dataNascitaText);
-                            } catch (ParseException ex) {
-                                JOptionPane.showMessageDialog(parente, "Formato data non valido. Usa aaaa/MM/gg.");
-                                return;
-                            }
-
-                            // Salvataggio
-                            try {
-                                animaleController.updateAnimale(chip, nome, tipo, razza, colore, dataNascita, animale.getChip());
-                                JOptionPane.showMessageDialog(parente, "Animale modificato con successo.");
-                                refreshTableData();
-                            } catch (Exception ex) {
-                                JOptionPane.showMessageDialog(parente, "Errore durante la modifica: " + ex.getMessage());
-                            }
-                        }
-                    });
+                // Mantieni lo stile anche quando selezionato
+                if (isSelected) {
+                    setBackground(buttonColor.darker());
                 }
 
-                @Override
-                public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-                    return panel;
+                return this;
+            }
+        }
+
+        // Classe per l'editor dei pulsanti
+        private class ButtonEditor extends DefaultCellEditor {
+            private JButton button;
+            private String text;
+            private Color buttonColor;
+            private boolean clicked;
+            private JTable table;
+            private int currentRow;
+            private Runnable actionHandler;
+
+            public ButtonEditor(String text, Color buttonColor, Runnable actionHandler) {
+                super(new JTextField());
+                this.text = text;
+                this.buttonColor = buttonColor;
+                this.actionHandler = actionHandler;
+
+                button = new JButton(text);
+                button.setOpaque(true);
+                button.setBackground(buttonColor);
+                button.setForeground(Color.WHITE);
+                button.setFont(new Font("Segoe UI", Font.BOLD, 11));
+                button.setBorder(BorderFactory.createRaisedBevelBorder());
+
+                button.addActionListener(e -> {
+                    clicked = true;
+                    fireEditingStopped();
+                });
+            }
+
+            @Override
+            public Component getTableCellEditorComponent(JTable table, Object value,
+                                                         boolean isSelected, int row, int column) {
+                this.table = table;
+                this.currentRow = row;
+                clicked = false;
+                button.setText(text);
+                return button;
+            }
+
+            @Override
+            public Object getCellEditorValue() {
+                if (clicked && actionHandler != null) {
+                    // Esegui l'azione in un thread separato per evitare problemi con l'editing
+                    SwingUtilities.invokeLater(actionHandler);
+                }
+                return text;
+            }
+
+            @Override
+            public boolean stopCellEditing() {
+                clicked = false;
+                return super.stopCellEditing();
+            }
+
+            public int getCurrentRow() {
+                return currentRow;
+            }
+        }
+
+        // Metodo per gestire la modifica
+        private void handleModifica() {
+            int row = getCurrentEditingRow();
+            if (row == -1 || row >= animali.size()) return;
+
+            Animale animale = animali.get(row);
+
+            JPanel formPanelAnimal = utilities.createSectionPanel("Modifica Animale");
+            formPanelAnimal.setLayout(new GridLayout(0, 2, 10, 10));
+
+            formPanelAnimal.add(new JLabel("Chip:"));
+            JTextField chipField = new JTextField(String.valueOf(animale.getChip()));
+            formPanelAnimal.add(chipField);
+
+            formPanelAnimal.add(new JLabel("Nome:"));
+            JTextField nomeField = new JTextField(animale.getNome());
+            formPanelAnimal.add(nomeField);
+
+            formPanelAnimal.add(new JLabel("Tipo:"));
+            JComboBox<String> tipoCombo = new JComboBox<>(utilities.animalTypes);
+            tipoCombo.setSelectedItem(animale.getTipo());
+            formPanelAnimal.add(tipoCombo);
+
+            formPanelAnimal.add(new JLabel("Razza:"));
+            JTextField razzaField = new JTextField(animale.getRazza());
+            formPanelAnimal.add(razzaField);
+
+            formPanelAnimal.add(new JLabel("Colore:"));
+            JTextField coloreField = new JTextField(animale.getColore());
+            formPanelAnimal.add(coloreField);
+
+            formPanelAnimal.add(new JLabel("Data di Nascita (yyyy/MM/dd):"));
+            JTextField dataNascitaField = new JTextField(new SimpleDateFormat("yyyy/MM/dd").format(animale.getDataNascita()));
+            formPanelAnimal.add(dataNascitaField);
+
+            int conferma = JOptionPane.showConfirmDialog(parente, formPanelAnimal,
+                    "Modifica Animale", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+            if (conferma == JOptionPane.OK_OPTION) {
+                // Estrai e valida i dati
+                String chipText = chipField.getText().trim();
+                String nome = nomeField.getText().trim();
+                Object selectedItem = tipoCombo.getSelectedItem();
+                String tipo = (selectedItem != null) ? selectedItem.toString() : "";
+                String razza = razzaField.getText().trim();
+                String colore = coloreField.getText().trim();
+                String dataNascitaText = dataNascitaField.getText().trim();
+
+                // Controlla campi vuoti
+                if (chipText.isEmpty() || nome.isEmpty() || tipo.isEmpty() || razza.isEmpty() || colore.isEmpty() || dataNascitaText.isEmpty()) {
+                    JOptionPane.showMessageDialog(parente, "Tutti i campi sono obbligatori.", "Errore", JOptionPane.ERROR_MESSAGE);
+                    return;
                 }
 
-                @Override
-                public Object getCellEditorValue() {
-                    return null;
-                }
-            });
-
-            // Editor per Cancella
-            table.getColumn("  ").setCellEditor(new DefaultCellEditor(new JTextField()) {
-                private JPanel panel;
-                private JButton btnCancella = new JButton("Cancella");
-
-                {
-                    panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
-                    panel.add(btnCancella);
-
-                    btnCancella.addActionListener(e -> {
-                        int row = table.getEditingRow();
-                        Animale animale = animali.get(row);
-
-                        int conferma = JOptionPane.showConfirmDialog(parente,
-                                "Sei sicuro di voler cancellare l'animale \"" + animale.getNome() + "\"?",
-                                "Conferma Cancellazione", JOptionPane.YES_NO_OPTION);
-
-                        if (conferma == JOptionPane.YES_OPTION) {
-                            try {
-                                animaleController.deleteAnimale(animale.getChip());
-                                model.removeRow(row);
-                                animali.remove(row);
-                                JOptionPane.showMessageDialog(parente,
-                                        "Animale \"" + animale.getNome() + "\" cancellato con successo.");
-                            } catch (Exception ex) {
-                                JOptionPane.showMessageDialog(parente,
-                                        "Errore durante la cancellazione: " + ex.getMessage(),
-                                        "Errore", JOptionPane.ERROR_MESSAGE);
-                            }
-                        }
-                        fireEditingStopped();
-                    });
+                int chip;
+                try {
+                    chip = Integer.parseInt(chipText);
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(parente, "Il chip deve essere un numero intero.", "Errore", JOptionPane.ERROR_MESSAGE);
+                    return;
                 }
 
-                @Override
-                public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-                    return panel;
+                Date dataNascita;
+                try {
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+                    sdf.setLenient(false);
+                    dataNascita = sdf.parse(dataNascitaText);
+                } catch (ParseException ex) {
+                    JOptionPane.showMessageDialog(parente, "Formato data non valido. Usa yyyy/MM/dd.", "Errore", JOptionPane.ERROR_MESSAGE);
+                    return;
                 }
 
-                @Override
-                public Object getCellEditorValue() {
-                    return null;
+                // Salvataggio
+                try {
+                    animaleController.updateAnimale(chip, nome, tipo, razza, colore, dataNascita, animale.getChip());
+                    JOptionPane.showMessageDialog(parente, "Animale modificato con successo.", "Successo", JOptionPane.INFORMATION_MESSAGE);
+                    refreshTableData();
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(parente, "Errore durante la modifica: " + ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                 }
-            });
+            }
+        }
+
+        // Metodo per gestire la cancellazione
+        private void handleCancella() {
+            int row = getCurrentEditingRow();
+            if (row == -1 || row >= animali.size()) return;
+
+            Animale animale = animali.get(row);
+
+            int conferma = JOptionPane.showConfirmDialog(parente,
+                    "Sei sicuro di voler cancellare l'animale \"" + animale.getNome() + "\"?\n" +
+                            "Questa operazione non può essere annullata.",
+                    "Conferma Cancellazione",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE);
+
+            if (conferma == JOptionPane.YES_OPTION) {
+                try {
+                    animaleController.deleteAnimale(animale.getChip());
+                    refreshTableData(); // Ricarica tutti i dati per sicurezza
+                    JOptionPane.showMessageDialog(parente,
+                            "Animale \"" + animale.getNome() + "\" cancellato con successo.",
+                            "Successo", JOptionPane.INFORMATION_MESSAGE);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(parente,
+                            "Errore durante la cancellazione: " + ex.getMessage(),
+                            "Errore", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }
+        private int getCurrentEditingRow() {
+            // Prima prova a ottenere la riga dall'editor
+            if (table.getCellEditor() != null && table.getCellEditor() instanceof ButtonEditor) {
+                return ((ButtonEditor)table.getCellEditor()).getCurrentRow();
+            }
+
+            // Se non funziona, prova con la riga selezionata
+            return table.getSelectedRow();
         }
     }
     private void waitForImageWrite(File file, int maxAttempts, int delayMillis) {
