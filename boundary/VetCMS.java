@@ -419,6 +419,9 @@ public class VetCMS {
                     if (nome.isEmpty() || produttore.isEmpty()) {
                         throw new IllegalArgumentException("Inserire nome e produttore");
                     }
+                    if( nome.length() > 40 || produttore.length() > 40) {
+                        throw new IllegalArgumentException("Nome e produttore non possono superare i 40 caratteri");
+                    }
 
                     int nuovoId = farmacoController.inserisciFarmaco(nome, produttore);
                     farmaciSelezionati.add(nuovoId);
