@@ -95,17 +95,11 @@ public class AdminCMS {
             frame.repaint();
         });
 
-        elencoVisiteGiornaliereButton.addActionListener(e -> {
-            new MostraVisiteDialog(frame).setVisible(true);
-        });
+        elencoVisiteGiornaliereButton.addActionListener(e -> new MostraVisiteDialog(frame).setVisible(true));
 
-        visualizzaAnimaliUltimaVaccinazioneButton.addActionListener(e -> {
-            new VisualizzaUltimaVaccinazioneDialog(frame).setVisible(true);
-        });
+        visualizzaAnimaliUltimaVaccinazioneButton.addActionListener(e -> new VisualizzaUltimaVaccinazioneDialog(frame).setVisible(true));
 
-        inserisciDisponibilitaButton.addActionListener(e -> {
-            new InserisciDisponibilitaDialog(frame).setVisible(true);
-        });
+        inserisciDisponibilitaButton.addActionListener(e -> new InserisciDisponibilitaDialog(frame).setVisible(true));
     }
 
     private static class MostraVisiteDialog extends JDialog {
@@ -233,7 +227,6 @@ public class AdminCMS {
         private JLabel dataSelezionataLabel;
         private JComboBox<String> orarioCombo;
         private JButton confermaButton;
-        private JButton annullaButton;
 
         public InserisciDisponibilitaDialog(JFrame parente) {
             super(parente, "Inserisci disponibilità", true);
@@ -282,7 +275,7 @@ public class AdminCMS {
             buttonPanel.setPreferredSize(new Dimension(550, 50));
             confermaButton = utilities.createButton("Conferma", utilities.Green);
             confermaButton.setEnabled(false); // Disabilitato inizialmente
-            annullaButton = utilities.createButton("Annulla", utilities.Red);
+            JButton annullaButton = utilities.createButton("Annulla", utilities.Red);
             buttonPanel.add(confermaButton);
             buttonPanel.add(annullaButton);
 
