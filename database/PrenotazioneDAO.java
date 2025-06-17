@@ -1,6 +1,8 @@
 package database;
 
 import java.sql.*;
+import java.util.Date;
+
 import entity.Prenotazione;
 
 public class PrenotazioneDAO {
@@ -54,6 +56,28 @@ public class PrenotazioneDAO {
             int rowsAffected = stmt.executeUpdate();
             if (rowsAffected == 0) {
                 throw new SQLException("Nessuna prenotazione aggiornata.");
+            }
+        } catch (SQLException e) {
+            throw new SQLException("Errore durante l'aggiornamento della prenotazione: " + e.getMessage(), e);
+        } catch (ClassNotFoundException e) {
+            throw new ClassNotFoundException("Driver JDBC non trovato: " + e.getMessage(), e);
+        }
+    }
+
+    public void updateVet(Date data, int ora, int idVisita, int idStato) throws SQLException, ClassNotFoundException {
+        String query = "UPDATE prenotazione SET idStato = ?, idVisita = ? WHERE data = ? AND orario = ?";
+
+        try (Connection conn = DBConnectionManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setInt(1, idStato);
+            stmt.setInt(2, idVisita);
+            stmt.setDate(3, new java.sql.Date(data.getTime()));
+            stmt.setInt(4, ora);
+
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected == 0) {
+                throw new SQLException("Prenotazione non trovata");
             }
         } catch (SQLException e) {
             throw new SQLException("Errore durante l'aggiornamento della prenotazione: " + e.getMessage(), e);

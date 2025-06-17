@@ -13,12 +13,17 @@ public class PrenotazioneController {
         prenotazione.inserisciPrenotazioneAdmin(prenotazione);
     }
 
-    public void updatePrenotazione(Date data, int orario, int chipAnimale, int idStato){
+    public void updatePrenotazioneUtente(Date data, int orario, int chipAnimale, int idStato){
         Prenotazione prenotazione = new Prenotazione();
         prenotazione.setData(data);
         prenotazione.setOrario(orario);
         prenotazione.setChipAnimale(chipAnimale);
-        prenotazione.setIdStato(idStato); // Assuming 1 is the ID for "in attesa"
+        prenotazione.setIdStato(idStato);
         prenotazione.inserisciPrenotazioneUtente(prenotazione);
+    }
+
+    public void updatePrenotazioneVet(Date data, int ora, int idVisita, int idStato) {
+        Prenotazione prenotazione = new Prenotazione();
+        prenotazione.updatePrenotazioneVet(data, ora , idVisita, idStato);
     }
 }

@@ -45,9 +45,6 @@ public class Prenotazione {
     public int getIdVisita() {
         return idVisita;
     }
-    public void setIdVisita(int idVisita) {
-        this.idVisita = idVisita;
-    }
 
     public void inserisciPrenotazioneAdmin(Prenotazione p){
         PrenotazioneDAO prenotazioneDAO = new PrenotazioneDAO();
@@ -67,5 +64,12 @@ public class Prenotazione {
         }
     }
 
-
+    public void updatePrenotazioneVet(Date data, int ora, int idVisita, int idStato) {
+        PrenotazioneDAO prenotazioneDAO = new PrenotazioneDAO();
+        try {
+            prenotazioneDAO.updateVet(data, ora, idVisita, idStato);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
