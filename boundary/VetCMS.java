@@ -193,7 +193,7 @@ public class VetCMS {
 
             Date oggi = new Date();
             AgendaController ac = new AgendaController();
-            List<Agenda> prenotazioniDisponibili = ac.getPrenotazioniDay(oggi);
+            List<Agenda> prenotazioniDisponibili = ac.getPrenotazioniBeforeDay(oggi);
 
             // Sezione prenotazione e tipo visita
             JPanel infoPanel = new JPanel(new GridLayout(0, 2, 10, 10));

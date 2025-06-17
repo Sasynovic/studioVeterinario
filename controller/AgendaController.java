@@ -22,6 +22,11 @@ public class AgendaController {
         return agenda.getPrenotazioneByDate(data);
     }
 
+    public List<Agenda> getPrenotazioniBeforeDay(Date data) {
+        Agenda agenda = new Agenda();
+        return agenda.getPrenotazioneBeforeDate(data);
+    }
+
     public List<Agenda> getVisiteDay(Date data) {
         Agenda agenda = new Agenda();
         return agenda.getVisiteByDate(data);
