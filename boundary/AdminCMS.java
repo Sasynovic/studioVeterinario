@@ -354,7 +354,6 @@ public class AdminCMS {
 
             try {
                 List<Agenda> orariDisponibili = ac.getOrariDisponibili(dataSelezionata);
-
                 // Rimuovi SwingUtilities.invokeLater per evitare problemi di concorrenza
                 orarioCombo.removeAllItems();
 
