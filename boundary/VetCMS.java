@@ -8,19 +8,27 @@ import java.awt.*;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import controller.FarmacoController;
+import controller.PrenotazioneController;
+import controller.VisitaController;
 import entity.Agenda;
 import controller.AgendaController;
+import entity.Farmaco;
 
 public class VetCMS {
+    private final String usernameVet;
     private JPanel vetPanel;
     private JButton elencoPrenotazioniGiornaliereButton;
     private JButton registraVisitaButton;
     private JButton logoutButton;
     private JLabel titleLabel;
+
+
 
     protected static Utilities utilities = new Utilities();
 
@@ -29,7 +37,8 @@ public class VetCMS {
         return sdf.format(new Date());
     }
 
-    public VetCMS(JFrame frame) {
+    public VetCMS(JFrame frame, String usernameVet) {
+        this.usernameVet = usernameVet;
         initializeMainPanel();
         createWelcomeLabel();
         createMainActionsSection();
@@ -97,7 +106,7 @@ public class VetCMS {
         });
 
         registraVisitaButton.addActionListener(e -> {
-            new registraVisita(frame).setVisible(true);
+            new registraVisita(frame, usernameVet).setVisible(true);
         });
     }
 
@@ -164,49 +173,277 @@ public class VetCMS {
     }
 
     private static class registraVisita extends JDialog {
-        public registraVisita(JFrame parente) {
-            // super() DEVE essere la prima istruzione
+        private List<Integer> farmaciSelezionati = new ArrayList<>();
+        private DefaultListModel<String> farmaciSelezionatiModel = new DefaultListModel<>();
+        private FarmacoController farmacoController = new FarmacoController();
+        private String usernameVet; // Aggiunto campo per username veterinario
+
+        public registraVisita(JFrame parente, String usernameVet) {
             super(parente, "Registra Visita", true);
+            this.usernameVet = usernameVet;
 
             // Titolo e pannello principale
             JPanel contentPanel = utilities.createSectionPanel("Registra Visita");
             contentPanel.setLayout(new BorderLayout());
 
             // Form per inserire i dati della visita
-            JPanel formPanel = new JPanel(new GridLayout(0, 2, 10, 10));
+            JPanel formPanel = new JPanel();
+            formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));
             formPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-            JComboBox<String> giornoPrenotazione = new JComboBox<>();
+            Date oggi = new Date();
+            AgendaController ac = new AgendaController();
+            List<Agenda> prenotazioniDisponibili = ac.getPrenotazioniDay(oggi);
 
-            // in base a al giorno selezionato, si popola il combo con gli orari presenti
+            // Sezione prenotazione e tipo visita
+            JPanel infoPanel = new JPanel(new GridLayout(0, 2, 10, 10));
+            JComboBox<String> prenotazioniCombo = new JComboBox<>();
+            prenotazioniDisponibili.forEach(prenotazione ->
+                    prenotazioniCombo.addItem(prenotazione.getData() + " " +
+                            String.format("%02d:00", prenotazione.getOrario()) + " - " +
+                            prenotazione.getNomeAnimale() + " (" + prenotazione.getNomeProprietario() + ")")
+            );
 
-            // combo per selezionare il tipo della visita
             JComboBox<String> tipoVisita = new JComboBox<>(utilities.visitType);
 
-            JLabel chipAnimaleLabel = new JLabel("Descrizione visita:");
-            JTextField chipAnimaleField = new JTextField();
-            formPanel.add(chipAnimaleLabel);
-            formPanel.add(chipAnimaleField);
+            infoPanel.add(new JLabel("Prenotazione:"));
+            infoPanel.add(prenotazioniCombo);
+            infoPanel.add(new JLabel("Tipo Visita:"));
+            infoPanel.add(tipoVisita);
+            formPanel.add(infoPanel);
 
-            JLabel costoVisita = new JLabel("Costo visita:");
-            JTextField costoVisitaField = new JTextField();
-            formPanel.add(costoVisita);
+            // Sezione descrizione
+            JPanel descrizionePanel = new JPanel(new BorderLayout());
+            descrizionePanel.add(new JLabel("Descrizione visita:"), BorderLayout.NORTH);
+            JTextArea descrizioneArea = new JTextArea(3, 20);
+            descrizioneArea.setLineWrap(true);
+            descrizionePanel.add(new JScrollPane(descrizioneArea), BorderLayout.CENTER);
+            formPanel.add(Box.createVerticalStrut(10));
+            formPanel.add(descrizionePanel);
 
-            JButton registraButton = utilities.createButton("Registra Visita", utilities.Blue);
+            // Stato visita
+            JPanel statoPanel = new JPanel(new BorderLayout());
+            statoPanel.add(new JLabel("Stato visita:"), BorderLayout.NORTH);
+            JComboBox<String> statoVisitaCombo = new JComboBox<>(new String[]{"Annullato", "Confermata", "Terminata"});
+            statoPanel.add(statoVisitaCombo, BorderLayout.CENTER);
+            formPanel.add(Box.createVerticalStrut(10));
+            formPanel.add(statoPanel);
 
-            registraButton.addActionListener(e -> {
-                try {
-                    AgendaController ac = new AgendaController();
+            // Sezione costo visita (corretta)
+            JPanel costoPanel = new JPanel(new BorderLayout());
+            costoPanel.add(new JLabel("Costo visita:"), BorderLayout.NORTH);
+            JTextField costoField = new JTextField("0.00");
+            costoPanel.add(costoField, BorderLayout.CENTER);
+            formPanel.add(Box.createVerticalStrut(10));
+            formPanel.add(costoPanel);
 
-                    JOptionPane.showMessageDialog(this, "Visita registrata con successo!");
-                    dispose();
-                } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(this, "Orario e Chip Animale devono essere numeri.");
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, "Errore durante la registrazione della visita: " + ex.getMessage());
+            // Sezione farmaci selezionati
+            JPanel farmaciPanel = new JPanel(new BorderLayout());
+            farmaciPanel.add(new JLabel("Farmaci selezionati:"), BorderLayout.NORTH);
+            JList<String> farmaciList = new JList<>(farmaciSelezionatiModel);
+            farmaciPanel.add(new JScrollPane(farmaciList), BorderLayout.CENTER);
+
+            // Pulsante per rimuovere farmaci selezionati
+            JButton rimuoviFarmacoButton = utilities.createButton("Rimuovi selezionato", utilities.Red);
+            rimuoviFarmacoButton.addActionListener(e -> {
+                int selectedIndex = farmaciList.getSelectedIndex();
+                if (selectedIndex != -1) {
+                    farmaciSelezionati.remove(selectedIndex);
+                    farmaciSelezionatiModel.remove(selectedIndex);
+                }
+            });
+
+            JPanel farmaciButtonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            farmaciButtonPanel.add(rimuoviFarmacoButton);
+            farmaciPanel.add(farmaciButtonPanel, BorderLayout.SOUTH);
+
+            formPanel.add(Box.createVerticalStrut(10));
+            formPanel.add(farmaciPanel);
+
+            // Pulsanti azione
+            JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+            JButton aggiungiFarmacoButton = utilities.createButton("Aggiungi Farmaco", utilities.Blue);
+            JButton registraButton = utilities.createButton("Registra Visita", utilities.Green);
+
+            aggiungiFarmacoButton.addActionListener(e -> mostraDialogoSelezioneFarmaco());
+            actionPanel.add(aggiungiFarmacoButton);
+            actionPanel.add(registraButton);
+
+            contentPanel.add(formPanel, BorderLayout.CENTER);
+            contentPanel.add(actionPanel, BorderLayout.SOUTH);
+
+            registraButton.addActionListener(e -> registraVisitaAction(
+                    prenotazioniCombo,
+                    tipoVisita,
+                    descrizioneArea,
+                    costoField,
+                    statoVisitaCombo
+            ));
+
+            getContentPane().add(contentPanel);
+            pack();
+            setLocationRelativeTo(parente);
+        }
+
+        private void registraVisitaAction(JComboBox<String> prenotazioniCombo,
+                                          JComboBox<String> tipoVisita,
+                                          JTextArea descrizioneArea,
+                                          JTextField costoField,
+                                          JComboBox<String> statoVisitaCombo) {
+            try {
+                String prenotazioneSelezionata = (String) prenotazioniCombo.getSelectedItem();
+                if (prenotazioneSelezionata == null || prenotazioneSelezionata.isEmpty()) {
+                    throw new IllegalArgumentException("Selezionare una prenotazione valida");
                 }
 
+                // Estrazione dati prenotazione
+                String[] parts = prenotazioneSelezionata.split(" - ");
+                String dataOrario = parts[0];
+                String[] dataOrarioParts = dataOrario.split(" ");
+                String data = dataOrarioParts[0];
+                int orario = Integer.parseInt(dataOrarioParts[1].replace(":00", ""));
+
+                System.out.println("Data: " + data + ", Orario: " + orario);
+
+                // Recupero altri dati
+                String tipo = (String) tipoVisita.getSelectedItem();
+                String descrizione = descrizioneArea.getText();
+                double costo;
+                try {
+                    costo = Double.parseDouble(costoField.getText().replace(",", "."));
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException("Formato costo non valido");
+                }
+                String statoVisita = (String) statoVisitaCombo.getSelectedItem();
+
+                if (costo < 0) {
+                    throw new IllegalArgumentException("Il costo non può essere negativo");
+                }
+
+                // Controllo campi obbligatori
+                if (descrizione.isEmpty()) {
+                    throw new IllegalArgumentException("La descrizione è obbligatoria");
+                }
+
+                // Converti la stringa data in Date
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                Date dataDate;
+                try {
+                    dataDate = sdf.parse(data);
+                } catch (ParseException e) {
+                    throw new IllegalArgumentException("Formato data non valido: " + data);
+                }
+
+                // Converti lo stato visita in codice numerico
+                int statoVisitaCode = switch (statoVisita) {
+                    case "Annullato" -> 2;
+                    case "Confermata" -> 3;
+                    case "Terminata" -> 4;
+                    default -> throw new IllegalArgumentException("Stato visita non valido: " + statoVisita);
+                };
+
+                // Inserimento visita
+                VisitaController vc = new VisitaController();
+                int idVisita = vc.inserisciVisita(tipo, descrizione, costo, usernameVet);
+
+                if (idVisita < 0) {
+                    throw new Exception("Errore durante l'inserimento della visita");
+                }
+
+                // Collegamento farmaci
+                for (Integer idFarmaco : farmaciSelezionati) {
+                    farmacoController.impiegaFarmaco(idVisita, idFarmaco);
+                }
+
+                // Aggiornamento prenotazione
+                PrenotazioneController pc = new PrenotazioneController();
+                pc.updatePrenotazioneVet(dataDate, orario, idVisita, statoVisitaCode);
+
+                JOptionPane.showMessageDialog(this, "Visita registrata con successo!");
+                dispose();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this,
+                        "Errore durante la registrazione: " + ex.getMessage(),
+                        "Errore",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        }
+
+        private void mostraDialogoSelezioneFarmaco() {
+            JDialog selezioneDialog = new JDialog(this, "Seleziona Farmaco", true);
+            selezioneDialog.setLayout(new BorderLayout());
+
+            // Pannello per selezione farmaco esistente
+            JPanel selezionePanel = new JPanel(new BorderLayout());
+            List<Farmaco> tuttiFarmaci = farmacoController.getFarmaci();
+            DefaultComboBoxModel<Farmaco> farmaciModel = new DefaultComboBoxModel<>();
+            tuttiFarmaci.forEach(farmaciModel::addElement);
+
+            JComboBox<Farmaco> farmaciCombo = new JComboBox<>(farmaciModel);
+            JButton selezionaEsistenteButton = utilities.createButton("Seleziona", utilities.Blue);
+
+            selezionePanel.add(new JLabel("Farmaci esistenti:"), BorderLayout.NORTH);
+            selezionePanel.add(farmaciCombo, BorderLayout.CENTER);
+            selezionePanel.add(selezionaEsistenteButton, BorderLayout.SOUTH);
+
+            // Pannello per aggiungere nuovo farmaco
+            JPanel nuovoFarmacoPanel = new JPanel(new GridLayout(0, 2, 10, 10));
+            nuovoFarmacoPanel.setBorder(BorderFactory.createTitledBorder("Aggiungi nuovo farmaco"));
+
+            JTextField nomeField = new JTextField();
+            JTextField produttoreField = new JTextField();
+            JButton aggiungiNuovoButton = utilities.createButton("Aggiungi nuovo", utilities.Green);
+
+            nuovoFarmacoPanel.add(new JLabel("Nome:"));
+            nuovoFarmacoPanel.add(nomeField);
+            nuovoFarmacoPanel.add(new JLabel("Produttore:"));
+            nuovoFarmacoPanel.add(produttoreField);
+            nuovoFarmacoPanel.add(new JLabel());
+            nuovoFarmacoPanel.add(aggiungiNuovoButton);
+
+            // Aggiungi listener ai pulsanti
+            selezionaEsistenteButton.addActionListener(e -> {
+                Farmaco selected = (Farmaco)farmaciCombo.getSelectedItem();
+                if (selected != null && !farmaciSelezionati.contains(selected.getId())) {
+                    farmaciSelezionati.add(selected.getId());
+                    farmaciSelezionatiModel.addElement(selected.getNome() + " (" + selected.getProduttore() + ")");
+                    selezioneDialog.dispose();
+                }
             });
+
+            aggiungiNuovoButton.addActionListener(e -> {
+                try {
+                    String nome = nomeField.getText().trim();
+                    String produttore = produttoreField.getText().trim();
+
+                    if (nome.isEmpty() || produttore.isEmpty()) {
+                        throw new IllegalArgumentException("Inserire nome e produttore");
+                    }
+
+                    int nuovoId = farmacoController.inserisciFarmaco(nome, produttore);
+                    farmaciSelezionati.add(nuovoId);
+                    farmaciSelezionatiModel.addElement(nome + " (" + produttore + ")");
+                    selezioneDialog.dispose();
+
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(selezioneDialog,
+                            "Errore: " + ex.getMessage(),
+                            "Errore",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            });
+
+            // Layout del dialogo
+            JPanel mainPanel = new JPanel();
+            mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+            mainPanel.add(selezionePanel);
+            mainPanel.add(Box.createVerticalStrut(10));
+            mainPanel.add(nuovoFarmacoPanel);
+
+            selezioneDialog.add(mainPanel, BorderLayout.CENTER);
+            selezioneDialog.pack();
+            selezioneDialog.setLocationRelativeTo(this);
+            selezioneDialog.setVisible(true);
         }
     }
 }
