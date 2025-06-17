@@ -20,13 +20,15 @@ public class Homepage {
         homepagePanel.setBackground(new Color(245, 250, 255));
         homepagePanel.setLayout(new BoxLayout(homepagePanel, BoxLayout.Y_AXIS));
         homepagePanel.setBorder(BorderFactory.createEmptyBorder(40, 50, 40, 50));
+        homepagePanel.setPreferredSize(new Dimension(600, 800));
 
         // Logo
         logoLabel = new JLabel();
         logoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         try {
             ImageIcon logo = new ImageIcon(getClass().getResource("/images/logo.png"));
-            logoLabel.setIcon(logo);
+            Image image = logo.getImage().getScaledInstance(200, 200, Image.SCALE_SMOOTH);
+            logoLabel.setIcon(new ImageIcon(image));
         } catch (Exception e) {
             logoLabel.setText("LOGO");
             logoLabel.setFont(new Font("Arial", Font.BOLD, 24));
