@@ -9,6 +9,7 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.net.URL;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -65,7 +66,7 @@ public class ProCMS {
         welcomeLabel.setFont(new Font("Segoe UI", Font.BOLD, 22));
         welcomeLabel.setForeground(new Color(70, 130, 180));
         welcomeLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 30, 0));
-        ImageIcon logo = new ImageIcon(getClass().getResource("../images/propic/" + immagineProfilo));
+        ImageIcon logo = new ImageIcon(getClass().getResource("/images/propic/" + immagineProfilo));
         JLabel imageLabel = new JLabel(logo);
         imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         logo.setImage(logo.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH));
@@ -318,15 +319,15 @@ public class ProCMS {
 
             // Bottoni
             gbc.gridy = 2; gbc.gridx = 0;
-            JButton cercaButton = utilities.createButton("Cerca Prenotazioni", new Color(70, 130, 180));
+            JButton cercaButton = utilities.createButton("Cerca Prenotazioni", utilities.Blue);
             bottomPanel.add(cercaButton, gbc);
 
             gbc.gridx = 1;
             JButton confermaButton = utilities.createButton("Conferma", utilities.Green);
             bottomPanel.add(confermaButton, gbc);
 
-            gbc.gridy = 3; gbc.gridx = 0; gbc.gridwidth = 2;
-            JButton annullaButton = utilities.createButton("Annulla", utilities.DarkGray);
+            gbc.gridx = 2;
+            JButton annullaButton = utilities.createButton("Annulla", utilities.Red);
             bottomPanel.add(annullaButton, gbc);
 
             mainPanel.add(bottomPanel, BorderLayout.SOUTH);
@@ -573,7 +574,11 @@ public class ProCMS {
 
             Utente utente = utenti.get(0);
 
-            // Form principale
+            // Form principale con larghezza fissa
+            JPanel mainPanel = new JPanel(new BorderLayout());
+            mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15)); // Margini interni
+            mainPanel.setPreferredSize(new Dimension(650, 450)); // Larghezza fissa 450px, altezza variabile
+
             JPanel formPanel = utilities.createSectionPanel("Modifica Profilo");
             formPanel.setLayout(new GridLayout(0, 2, 10, 10));
 
@@ -600,28 +605,39 @@ public class ProCMS {
 
             // Sezione immagine profilo
             formPanel.add(new JLabel("Immagine Profilo:"));
-            JPanel imagePanel = createImagePanel("../images/propic/" + utente.getImmagineProfilo());
+            JPanel imagePanel = createImagePanel("images/propic/" + utente.getImmagineProfilo());
             formPanel.add(imagePanel);
 
             // Pannello pulsanti
-            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
             JButton modificaButton = utilities.createButton("Modifica", utilities.Orange);
             JButton annullaButton = utilities.createButton("Annulla", utilities.Red);
             buttonPanel.add(modificaButton);
             buttonPanel.add(annullaButton);
 
-            // Layout principale
-            getContentPane().add(formPanel, BorderLayout.CENTER);
-            getContentPane().add(buttonPanel, BorderLayout.SOUTH);
+            // Aggiunta dei componenti al pannello principale
+            mainPanel.add(formPanel, BorderLayout.CENTER);
+            mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
+            // Configurazione finale della finestra
+            getContentPane().add(mainPanel);
+            pack();
+            setResizable(false); // Impedisce il ridimensionamento
+            setLocationRelativeTo(parente);
             // Eventi
             annullaButton.addActionListener(e -> dispose());
 
             modificaButton.addActionListener(e -> {
                 try {
-                    String imagePath = (selectedImageFile != null) ?
-                            saveProfileImage(selectedImageFile) :
-                            utente.getImmagineProfilo();
+                    String imagePath;
+                    if (selectedImageFile != null) {
+                        String savedPath = saveProfileImage(selectedImageFile);
+                        File savedFile = new File(savedPath);
+                        waitForImageWrite(savedFile, 10, 200); // aspetta max 1 secondo
+                        imagePath = savedPath;
+                    } else {
+                        imagePath = utente.getImmagineProfilo();
+                    }
 
                     utenteController.updateUser(
                             usernameField.getText(),
@@ -640,16 +656,31 @@ public class ProCMS {
                     JFrame mainFrame = (JFrame) SwingUtilities.getWindowAncestor(ProCMS.this.proPanel);
 
                     // Ricarica la schermata principale
-                    mainFrame.setContentPane(new ProCMS(
-                            mainFrame,
-                            nomeField.getText(),
-                            cognomeField.getText(),
-                            usernameField.getText(),
-                            utente.getImmagineProfilo()
-                    ).getProPanel());
+                    mainFrame.dispose(); // chiudi la finestra corrente
 
-                    mainFrame.revalidate();
-                    mainFrame.repaint();
+// Ricrea la finestra principale
+                    SwingUtilities.invokeLater(() -> {
+                        try {
+                            JFrame newFrame = new JFrame("ProCMS");
+                            System.out.println("Nuova immagine inserita: " + imagePath);
+                            ProCMS nuovoProCMS = new ProCMS(
+                                    newFrame,
+                                    nomeField.getText(),
+                                    cognomeField.getText(),
+                                    usernameField.getText(),
+                                    imagePath
+                            );
+                            newFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                            newFrame.setContentPane(nuovoProCMS.getProPanel());
+                            newFrame.pack();
+                            newFrame.setLocationRelativeTo(null);
+                            newFrame.setVisible(true);
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                            JOptionPane.showMessageDialog(null, "Errore durante il riavvio: " + ex.getMessage());
+                        }
+                    });
+
 
                 } catch (SQLException | ClassNotFoundException ex) {
                     JOptionPane.showMessageDialog(this,
@@ -684,17 +715,40 @@ public class ProCMS {
         }
 
         private void loadImage(String imagePath) {
-            ImageIcon icon;
-            if (imagePath != null && !imagePath.equals(DEFAULT_PROFILE_IMAGE)) {
-                icon = new ImageIcon(imagePath);
-            } else {
-                icon = new ImageIcon(getClass().getResource("images/propic/" + DEFAULT_PROFILE_IMAGE));
-            }
+            ImageIcon icon = null;
 
-            if (icon.getImage() != null) {
-                Image img = icon.getImage().getScaledInstance(
-                        PREVIEW_SIZE, PREVIEW_SIZE, Image.SCALE_SMOOTH);
-                previewLabel.setIcon(new ImageIcon(img));
+            try {
+                if (imagePath != null && !imagePath.equals(DEFAULT_PROFILE_IMAGE)) {
+                    File imageFile = new File(imagePath);
+                    if (imageFile.exists()) {
+                        icon = new ImageIcon(imageFile.getAbsolutePath());
+                    } else {
+                        System.err.println("Immagine non trovata su disco: " + imagePath);
+                    }
+                }
+
+                if (icon == null) {
+                    URL resource = getClass().getResource("/images/propic/" + DEFAULT_PROFILE_IMAGE);
+                    if (resource != null) {
+                        icon = new ImageIcon(resource);
+                    } else {
+                        System.err.println("Immagine default non trovata nel classpath!");
+                    }
+                }
+
+                if (icon != null && icon.getImage() != null) {
+                    Image img = icon.getImage().getScaledInstance(
+                            PREVIEW_SIZE, PREVIEW_SIZE, Image.SCALE_SMOOTH);
+                    previewLabel.setIcon(new ImageIcon(img));
+                } else {
+                    previewLabel.setIcon(null);
+                    previewLabel.setText("Immagine non disponibile");
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                previewLabel.setIcon(null);
+                previewLabel.setText("Errore caricamento");
             }
         }
 
@@ -1040,6 +1094,18 @@ public class ProCMS {
                     return null;
                 }
             });
+        }
+    }
+    private void waitForImageWrite(File file, int maxAttempts, int delayMillis) {
+        int attempts = 0;
+        while (!file.exists() && attempts < maxAttempts) {
+            try {
+                Thread.sleep(delayMillis);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+            attempts++;
         }
     }
 
