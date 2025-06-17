@@ -18,14 +18,14 @@ import java.util.Date;
 
 // solo i controller vanno importanti nella GUI
 import controller.AnimaleController;
+import controller.UtenteController;
+import controller.AgendaController;
 import controller.PrenotazioneController;
 
 // entity importare per crare delle List di lettura, seconod quanto detto da Marco Ariano andrebbero riportati dei DTO
-import controller.UtenteController;
+import entity.Agenda;
 import entity.Animale;
-import entity.Prenotazione;
 import entity.Utente;
-
 
 public class ProCMS {
     private JPanel proPanel;
@@ -234,7 +234,7 @@ public class ProCMS {
         public effettuaPrenotazione(JFrame parente, String usernameProprietario) throws SQLException, ClassNotFoundException {
             super(parente, "Effettua Prenotazione", true);
 
-            PrenotazioneController prenotazioneController = new PrenotazioneController();
+            AgendaController ac = new AgendaController();
             AnimaleController animaleController = new AnimaleController();
 
             setSize(800, 700);
@@ -268,7 +268,7 @@ public class ProCMS {
             bottomPanel.add(new JLabel("Prenotazioni disponibili:"), gbc);
 
             gbc.gridx = 1;
-            JComboBox<Prenotazione> prenotazioneCombo = new JComboBox<>();
+            JComboBox<Agenda> prenotazioneCombo = new JComboBox<>();
             prenotazioneCombo.setPreferredSize(new Dimension(250, 30));
             bottomPanel.add(prenotazioneCombo, gbc);
 
@@ -278,9 +278,9 @@ public class ProCMS {
                 public Component getListCellRendererComponent(JList<?> list, Object value,
                                                               int index, boolean isSelected, boolean cellHasFocus) {
                     super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                    if (value instanceof Prenotazione) {
-                        Prenotazione p = (Prenotazione) value;
-                        setText("Orario: " + p.getOrario() + ":00");
+                    if (value instanceof Agenda) {
+                        Agenda a = (Agenda) value;
+                        setText("Orario: " + a.getOrario() + ":00");
                     } else {
                         setText("Seleziona prima una data");
                     }
@@ -333,15 +333,15 @@ public class ProCMS {
                 }
 
                 try {
-                    List<Prenotazione> prenotazioni = prenotazioneController.readPrenotazione(dataSelezionata, 0);
+                    List<Agenda> agenda = ac.getPrenotazioniDisponibili(dataSelezionata);
                     prenotazioneCombo.removeAllItems();
 
-                    if (prenotazioni == null || prenotazioni.isEmpty()) {
+                    if (agenda == null || agenda.isEmpty()) {
                         JOptionPane.showMessageDialog(this, "Nessuna prenotazione disponibile per la data selezionata.");
                         animaleCombo.removeAllItems();
                     } else {
-                        for (Prenotazione p : prenotazioni) {
-                            prenotazioneCombo.addItem(p);
+                        for (Agenda a : agenda) {
+                            prenotazioneCombo.addItem(a);
                         }
                         List<Animale> animali = animaleController.readAnimale(usernameProprietario);
                         animaleCombo.removeAllItems();
@@ -353,7 +353,7 @@ public class ProCMS {
                                 animaleCombo.addItem(a);
                             }
                         }
-                        JOptionPane.showMessageDialog(this, "Trovate " + prenotazioni.size() + " prenotazioni disponibili.");
+                        JOptionPane.showMessageDialog(this, "Trovate " + agenda + " prenotazioni disponibili.");
                     }
 
 
@@ -364,7 +364,7 @@ public class ProCMS {
             });
 
             confermaButton.addActionListener(e -> {
-                Prenotazione dataSelected = (Prenotazione) prenotazioneCombo.getSelectedItem();
+                Agenda dataSelected = (Agenda) prenotazioneCombo.getSelectedItem();
                 Animale animaleSelected = (Animale) animaleCombo.getSelectedItem();
                 int orarioSelezionato = dataSelected != null ? dataSelected.getOrario() : -1;
 
@@ -382,6 +382,7 @@ public class ProCMS {
                 }
 
                 try {
+                    PrenotazioneController prenotazioneController = new PrenotazioneController();
                     prenotazioneController.updatePrenotazione(dataSelezionata, orarioSelezionato, animaleSelected.getChip(), 1);
                     JOptionPane.showMessageDialog(this, "Prenotazione effettuata con successo.");
                     dispose();

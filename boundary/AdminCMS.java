@@ -1,7 +1,5 @@
 package boundary;
 
-import controller.PrenotazioneController;
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -13,7 +11,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import controller.PrenotationResult;
+import controller.PrenotazioneController;
+import entity.Agenda;
+import controller.AgendaController;
 
 public class AdminCMS {
     private JPanel adminPanel;
@@ -112,19 +112,19 @@ public class AdminCMS {
     private static class mostraPrenotazioniDialog extends JDialog {
         public mostraPrenotazioniDialog(JFrame parente) {
             // super() DEVE essere la prima istruzione
-            super(parente, "Prenotazioni del giorno " + formatDataItaliana(), true);
+            super(parente, "Visite del giorno " + formatDataItaliana(), true);
 
             Date oggi = new Date();
 
             // Titolo e pannello principale
-            JPanel contentPanel = utilities.createSectionPanel("Prenotazioni del giorno");
+            JPanel contentPanel = utilities.createSectionPanel("Visite del giorno");
             contentPanel.setLayout(new BorderLayout());
 
             // Recupera le prenotazioni del giorno
-            List<PrenotationResult> pDay;
+            List<Agenda> pDay;
             try {
-                PrenotazioneController pc = new PrenotazioneController();
-                pDay = pc.getPrenotazioniDay(oggi);
+                AgendaController ac = new AgendaController();
+                pDay = ac.getVisiteDay(oggi);
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Errore durante il caricamento delle prenotazioni: " + ex.getMessage());
                 dispose();
@@ -135,16 +135,16 @@ public class AdminCMS {
             String[] colonne = {"Orario", "Stato", "ChipAnimale", "Animale", "Proprietario"};
             DefaultTableModel model = new DefaultTableModel(colonne, 0);
 
-            for (PrenotationResult p : pDay) {
-                int orarioInt = p.getOrario();
+            for (Agenda a : pDay) {
+                int orarioInt = a.getOrario();
                 String orarioFormattato = String.format("%02d:00", orarioInt);
 
                 model.addRow(new Object[]{
                         orarioFormattato,
-                        p.getNomeStato(),
-                        p.getChipAnimale(),
-                        p.getNomeAnimale(),
-                        p.getNomeProprietario()
+                        a.getNomeStato(),
+                        a.getChipAnimale(),
+                        a.getNomeAnimale(),
+                        a.getNomeProprietario()
                 });
             }
 
@@ -181,10 +181,10 @@ public class AdminCMS {
             contentPanel.setLayout(new BorderLayout());
 
             // Recupera le prenotazioni del giorno
-            List<PrenotationResult> pDay;
+            List<Agenda> pDay;
             try {
-                PrenotazioneController pc = new PrenotazioneController();
-                pDay = pc.getVaccinazioniYear(oggi);
+                AgendaController ac = new AgendaController();
+                pDay = ac.getVaccinazioniYear(oggi);
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Errore durante il caricamento delle prenotazioni: " + ex.getMessage());
                 dispose();
@@ -195,16 +195,16 @@ public class AdminCMS {
             String[] colonne = {"Data", "Orario", "ChipAnimale", "Animale", "Proprietario"};
             DefaultTableModel model = new DefaultTableModel(colonne, 0);
 
-            for (PrenotationResult p : pDay) {
-                int orarioInt = p.getOrario();
+            for (Agenda a : pDay) {
+                int orarioInt = a.getOrario();
                 String orarioFormattato = String.format("%02d:00", orarioInt);
 
                 model.addRow(new Object[]{
-                        p.getData(),
+                        a.getData(),
                         orarioFormattato,
-                        p.getChipAnimale(),
-                        p.getNomeAnimale(),
-                        p.getNomeProprietario()
+                        a.getChipAnimale(),
+                        a.getNomeAnimale(),
+                        a.getNomeProprietario()
                 });
             }
 
