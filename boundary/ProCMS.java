@@ -8,6 +8,7 @@ import java.awt.*;
 // importiamo le exception necessarie per la gestione degli errori
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -38,9 +39,9 @@ public class ProCMS {
 
     private static Utilities utilities = new Utilities();
 
-    public ProCMS(JFrame frame, String nome, String cognome, String username) {
+    public ProCMS(JFrame frame, String nome, String cognome, String username, String immagineProfilo) {
         initializeMainPanel();
-        createWelcomeLabel(nome, cognome);
+        createWelcomeLabel(nome, cognome, immagineProfilo);
         createAnimalsSection();
         createActionsSection();
         setupEventHandlers(frame, username);
@@ -58,12 +59,18 @@ public class ProCMS {
     }
 
     //visualizzazione
-    private void createWelcomeLabel(String nome, String cognome) {
+    private void createWelcomeLabel(String nome, String cognome, String immagineProfilo) {
         welcomeLabel = new JLabel("Benvenuto " + nome + " " + cognome);
         welcomeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         welcomeLabel.setFont(new Font("Segoe UI", Font.BOLD, 22));
         welcomeLabel.setForeground(new Color(70, 130, 180));
         welcomeLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 30, 0));
+        ImageIcon logo = new ImageIcon(getClass().getResource("../images/propic/" + immagineProfilo));
+        JLabel imageLabel = new JLabel(logo);
+        imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        logo.setImage(logo.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH));
+        imageLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
+        proPanel.add(imageLabel);
         proPanel.add(welcomeLabel);
     }
     //visualizzazione
@@ -547,7 +554,12 @@ public class ProCMS {
         }
 }
 
-    private static class modificaProfilo extends JDialog {
+    private class modificaProfilo extends JDialog {
+        private File selectedImageFile;
+        private JLabel previewLabel;
+        private static final String DEFAULT_PROFILE_IMAGE = "default.png";
+        private static final int PREVIEW_SIZE = 100;
+
         public modificaProfilo(JFrame parente, String usernameUtente) throws SQLException, ClassNotFoundException {
             super(parente, "Modifica profilo", true);
 
@@ -561,10 +573,11 @@ public class ProCMS {
 
             Utente utente = utenti.get(0);
 
-            // Form - simile a N1
+            // Form principale
             JPanel formPanel = utilities.createSectionPanel("Modifica Profilo");
             formPanel.setLayout(new GridLayout(0, 2, 10, 10));
 
+            // Campi testo
             formPanel.add(new JLabel("Nome:"));
             JTextField nomeField = new JTextField(utente.getNome());
             formPanel.add(nomeField);
@@ -585,14 +598,19 @@ public class ProCMS {
             JPasswordField passwordField = new JPasswordField(utente.getPassword());
             formPanel.add(passwordField);
 
-            // Pannello pulsanti separato
+            // Sezione immagine profilo
+            formPanel.add(new JLabel("Immagine Profilo:"));
+            JPanel imagePanel = createImagePanel("../images/propic/" + utente.getImmagineProfilo());
+            formPanel.add(imagePanel);
+
+            // Pannello pulsanti
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
             JButton modificaButton = utilities.createButton("Modifica", utilities.Orange);
             JButton annullaButton = utilities.createButton("Annulla", utilities.Red);
             buttonPanel.add(modificaButton);
             buttonPanel.add(annullaButton);
 
-            // Aggiunta dei pannelli al JDialog
+            // Layout principale
             getContentPane().add(formPanel, BorderLayout.CENTER);
             getContentPane().add(buttonPanel, BorderLayout.SOUTH);
 
@@ -601,36 +619,127 @@ public class ProCMS {
 
             modificaButton.addActionListener(e -> {
                 try {
+                    String imagePath = (selectedImageFile != null) ?
+                            saveProfileImage(selectedImageFile) :
+                            utente.getImmagineProfilo();
+
                     utenteController.updateUser(
                             usernameField.getText(),
                             nomeField.getText(),
                             cognomeField.getText(),
                             emailField.getText(),
                             new String(passwordField.getPassword()),
-                            utente.getImmagineProfilo(),
+                            imagePath,
                             usernameUtente
                     );
-
                     JOptionPane.showMessageDialog(this, "Profilo aggiornato con successo.");
 
-                    // Ricarico la schermata principale con il nuovo username
-                    JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
-                    frame.setContentPane(new ProCMS(frame, nomeField.getText(), cognomeField.getText(), usernameField.getText()).getProPanel());
-                    frame.revalidate();
-                    frame.repaint();
+                    // Chiudi questa finestra di dialogo
                     dispose();
 
+                    JFrame mainFrame = (JFrame) SwingUtilities.getWindowAncestor(ProCMS.this.proPanel);
+
+                    // Ricarica la schermata principale
+                    mainFrame.setContentPane(new ProCMS(
+                            mainFrame,
+                            nomeField.getText(),
+                            cognomeField.getText(),
+                            usernameField.getText(),
+                            utente.getImmagineProfilo()
+                    ).getProPanel());
+
+                    mainFrame.revalidate();
+                    mainFrame.repaint();
+
                 } catch (SQLException | ClassNotFoundException ex) {
-                    ex.printStackTrace();
-                    JOptionPane.showMessageDialog(this, "Errore durante l'aggiornamento del profilo.", "Errore", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this,
+                            "Errore durante l'aggiornamento del profilo: " + ex.getMessage(),
+                            "Errore",
+                            JOptionPane.ERROR_MESSAGE);
                 }
             });
 
             pack();
-            setLocationRelativeTo(parente); // centra la finestra rispetto al padre
+            setLocationRelativeTo(parente);
+        }
+
+        private JPanel createImagePanel(String currentImagePath) {
+            JPanel panel = new JPanel(new BorderLayout());
+
+            // Anteprima immagine
+            previewLabel = new JLabel();
+            previewLabel.setPreferredSize(new Dimension(PREVIEW_SIZE, PREVIEW_SIZE));
+            previewLabel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+            previewLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            loadImage(currentImagePath);
+
+            // Bottone selezione
+            JButton selectButton = new JButton("Cambia Immagine");
+            selectButton.addActionListener(e -> selectProfileImage());
+
+            panel.add(previewLabel, BorderLayout.CENTER);
+            panel.add(selectButton, BorderLayout.SOUTH);
+
+            return panel;
+        }
+
+        private void loadImage(String imagePath) {
+            ImageIcon icon;
+            if (imagePath != null && !imagePath.equals(DEFAULT_PROFILE_IMAGE)) {
+                icon = new ImageIcon(imagePath);
+            } else {
+                icon = new ImageIcon(getClass().getResource("images/propic/" + DEFAULT_PROFILE_IMAGE));
+            }
+
+            if (icon.getImage() != null) {
+                Image img = icon.getImage().getScaledInstance(
+                        PREVIEW_SIZE, PREVIEW_SIZE, Image.SCALE_SMOOTH);
+                previewLabel.setIcon(new ImageIcon(img));
+            }
+        }
+
+        private void selectProfileImage() {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
+                    "Immagini", "jpg", "jpeg", "png", "gif"));
+
+            if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+                selectedImageFile = fileChooser.getSelectedFile();
+                updateImagePreview(selectedImageFile);
+            }
+        }
+
+        private void updateImagePreview(File imageFile) {
+            ImageIcon icon = new ImageIcon(imageFile.getAbsolutePath());
+            Image img = icon.getImage().getScaledInstance(
+                    PREVIEW_SIZE, PREVIEW_SIZE, Image.SCALE_SMOOTH);
+            previewLabel.setIcon(new ImageIcon(img));
+        }
+
+        private String saveProfileImage(File imageFile) {
+            File profileDir = new File("images/propic/");
+            if (!profileDir.exists()) {
+                profileDir.mkdirs();
+            }
+
+            String timestamp = String.valueOf(System.currentTimeMillis());
+            String extension = imageFile.getName().substring(imageFile.getName().lastIndexOf("."));
+            String newFileName = "img_" + timestamp + extension;
+
+            try {
+                File destination = new File(profileDir, newFileName);
+                System.out.println("Copying image to: " + destination.getAbsolutePath());
+                java.nio.file.Files.copy(
+                        imageFile.toPath(),
+                        destination.toPath(),
+                        java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                return newFileName;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return DEFAULT_PROFILE_IMAGE;
+            }
         }
     }
-
     private static class visualizzaAnimali extends JDialog {
         private DefaultTableModel model;
         private JTable table;
