@@ -12,6 +12,11 @@ public class AgendaController {
         return agenda.getDisponibili(data);
     }
 
+    public List<Agenda> getOrariDisponibili(Date data) {
+        Agenda agenda = new Agenda();
+        return agenda.getOrariDisponibili(data);
+    }
+
     public List<Agenda> getPrenotazioniDay(Date data) {
         Agenda agenda = new Agenda();
         return agenda.getPrenotazioneByDate(data);

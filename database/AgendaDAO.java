@@ -8,6 +8,44 @@ import entity.Agenda;
 
 public class AgendaDAO {
 
+    public List<Agenda> readOrariDisponibili(Date data) throws SQLException, ClassNotFoundException {
+        String query =
+                "SELECT h.orario " +
+                        "FROM (" +
+                        "    SELECT 8 AS orario UNION ALL SELECT 9 UNION ALL SELECT 10 UNION ALL " +
+                        "    SELECT 11 UNION ALL SELECT 12 UNION ALL SELECT 13 UNION ALL " +
+                        "    SELECT 14 UNION ALL SELECT 15 UNION ALL SELECT 16 UNION ALL SELECT 17" +
+                        ") AS h " +
+                        "WHERE NOT EXISTS (" +
+                        "    SELECT 1 FROM prenotazione p " +
+                        "    WHERE p.data = ? AND p.orario = h.orario" +
+                        ") " +
+                        "ORDER BY h.orario";
+
+        List<Agenda> prenotazioni = new ArrayList<>();
+
+        try (Connection conn = DBConnectionManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setDate(1, new java.sql.Date(data.getTime()));
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    int orario = rs.getInt("orario");
+                    Agenda result = new Agenda(data, orario, null, 0, null, null);
+                    prenotazioni.add(result);
+                }
+            } catch (SQLException e) {
+                throw new SQLException("Errore durante la lettura degli orari disponibili: " + e.getMessage(), e);
+            }
+        }catch (ClassNotFoundException e) {
+            throw new ClassNotFoundException("Driver JDBC non trovato: " + e.getMessage(), e);
+        } catch (SQLException e) {
+            throw new SQLException("Errore durante la connessione al database: " + e.getMessage(), e);
+        }
+        return prenotazioni;
+    }
+
     public List<Agenda> readDisponibili(Date data) throws SQLException, ClassNotFoundException {
         String query = "SELECT p.data, p.orario, p.chipAnimale, p.chipAnimale, " +
                 "s.nomeStato, " +

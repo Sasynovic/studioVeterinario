@@ -130,4 +130,25 @@ public class Agenda {
             return null;
         }
     }
+
+    public List<Agenda> getOrariDisponibili(Date data) {
+        AgendaDAO agendaDAO = new AgendaDAO();
+        try {
+            // Conversione sicura da java.util.Date a java.sql.Date
+            java.sql.Date sqlDate = null;
+            if (data != null) {
+                // Se la data è già un java.sql.Date, usala direttamente
+                if (data instanceof java.sql.Date) {
+                    sqlDate = (java.sql.Date) data;
+                } else {
+                    // Altrimenti converti da java.util.Date
+                    sqlDate = new java.sql.Date(data.getTime());
+                }
+            }
+            return agendaDAO.readOrariDisponibili(sqlDate);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }
