@@ -383,7 +383,7 @@ public class ProCMS {
 
                 try {
                     PrenotazioneController prenotazioneController = new PrenotazioneController();
-                    prenotazioneController.updatePrenotazione(dataSelezionata, orarioSelezionato, animaleSelected.getChip(), 1);
+                    prenotazioneController.updatePrenotazioneUtente(dataSelezionata, orarioSelezionato, animaleSelected.getChip(), 1);
                     JOptionPane.showMessageDialog(this, "Prenotazione effettuata con successo.");
                     dispose();
                 } catch (Exception ex) {
