@@ -702,9 +702,7 @@ public class ProCMS {
                 InserisciAnimale dialog = null;
                 try {
                     dialog = new InserisciAnimale(parente, usernameProprietario);
-                } catch (SQLException ex) {
-                    throw new RuntimeException(ex);
-                } catch (ClassNotFoundException ex) {
+                } catch (SQLException | ClassNotFoundException ex) {
                     throw new RuntimeException(ex);
                 }
                 dialog.addWindowListener(new WindowAdapter() {
